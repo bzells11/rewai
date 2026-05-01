@@ -1,0 +1,61 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: dark;
+}
+
+body {
+  background-color: #07090f;
+  color: #f1f5f9;
+  font-family: 'Inter', sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Dot grid background */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image: radial-gradient(rgba(255,255,255,0.06) 1px, transparent 1px);
+  background-size: 28px 28px;
+  pointer-events: none;
+  z-index: 0;
+}
+
+#root {
+  position: relative;
+  z-index: 1;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 2px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(56,189,248,0.3); }
+
+/* Glass card base */
+.glass {
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.08);
+  backdrop-filter: blur(8px);
+}
+
+.glass:hover {
+  border-color: rgba(56,189,248,0.2);
+  transform: translateY(-2px);
+  transition: all 0.2s ease;
+}
+
+/* Status badge colors */
+.status-cold    { background: rgba(100,116,139,0.2); color: #94a3b8; }
+.status-active  { background: rgba(56,189,248,0.15); color: #38bdf8; }
+.status-warm    { background: rgba(251,191,36,0.15); color: #fbbf24; }
+.status-hot     { background: rgba(239,68,68,0.2); color: #f87171; }
+.status-handed_off { background: rgba(74,222,128,0.15); color: #4ade80; }
+.status-dead    { background: rgba(100,116,139,0.1); color: #475569; }
+
+@layer utilities {
+  .font-display { font-family: 'Space Grotesk', sans-serif; }
+}
