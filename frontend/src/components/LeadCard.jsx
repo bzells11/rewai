@@ -55,12 +55,12 @@ export default function LeadCard({ lead, isDragging, compact }) {
 
       {/* Address */}
       {!compact && lead.address && (
-        <p className="text-xs text-muted truncate mb-2 max-w-[190px]">{lead.address}</p>
+        <p className="text-xs text-muted truncate mb-2 max-w-[190px] lead-card-address">{lead.address}</p>
       )}
 
       {/* AI notes or situation */}
       {!compact && (lead.ai_notes || lead.situation) && (
-        <p className="text-xs text-text-secondary mb-3 line-clamp-2 leading-relaxed">
+        <p className="text-xs text-text-secondary mb-3 line-clamp-2 leading-relaxed lead-card-situation">
           {lead.ai_notes || lead.situation}
         </p>
       )}
@@ -74,7 +74,7 @@ export default function LeadCard({ lead, isDragging, compact }) {
         {lead.asking_price && (
           <span className="flex items-center gap-1 ml-auto">
             <span className="text-muted/60">Asking</span>
-            <span className="font-medium text-text-secondary">${lead.asking_price.toLocaleString()}</span>
+            <span className="font-medium text-text-secondary lead-card-price">${lead.asking_price.toLocaleString()}</span>
           </span>
         )}
         {!lead.ai_enabled && !lead.asking_price && (

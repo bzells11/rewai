@@ -42,10 +42,10 @@ function KanbanColumn({ col, leads, compact }) {
       {/* Column header */}
       <div className="flex items-center gap-2 mb-3 px-0.5">
         <span className="w-2 h-2 rounded-full shrink-0" style={{ background: col.color }} />
-        <span className="font-display font-semibold text-sm tracking-tight" style={{ color: col.color }}>
+        <span className="font-display font-semibold text-sm tracking-tight kanban-col-label" style={{ color: col.color }}>
           {col.label}
         </span>
-        <span className="ml-auto text-xs text-muted tabular-nums font-medium">
+        <span className="ml-auto text-xs text-muted tabular-nums font-medium kanban-col-count">
           {leads.length}
         </span>
       </div>
@@ -200,7 +200,7 @@ export default function Dashboard() {
                 className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all duration-150
                   ${compact
                     ? 'bg-accent/10 text-accent'
-                    : 'text-muted hover:text-text-secondary hover:bg-dim/5'
+                    : 'text-[#6b7280] hover:text-text-secondary hover:bg-dim/5'
                   }`}
               >
                 <Rows2 size={13} />
@@ -208,7 +208,7 @@ export default function Dashboard() {
               </button>
               <button
                 onClick={() => navigate('/import')}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-accent text-bg hover:bg-accent/90 transition-all duration-150"
+                className="add-leads-btn flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-accent text-bg hover:bg-accent/90 transition-all duration-150"
               >
                 <Plus size={13} />
                 Add Leads
