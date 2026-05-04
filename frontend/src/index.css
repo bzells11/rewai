@@ -133,6 +133,31 @@ html.dark .status-dead       { background: rgba(100,116,139,0.10); color: #47556
   .font-display { font-family: 'Space Grotesk', sans-serif; }
 }
 
+/* ─── Feature grid dividers ───────────────────────────── */
+.feature-cell {
+  position: relative;
+}
+.feature-cell:not(:nth-child(3n))::after {
+  content: '';
+  position: absolute;
+  right: 0; top: 0; bottom: 0;
+  width: 1px;
+  background: rgba(255,255,255,0.15);
+}
+.feature-cell:nth-child(-n+3)::before {
+  content: '';
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  height: 1px;
+  background: rgba(255,255,255,0.15);
+}
+html:not(.dark) .feature-cell:not(:nth-child(3n))::after {
+  background: rgba(0,0,0,0.12);
+}
+html:not(.dark) .feature-cell:nth-child(-n+3)::before {
+  background: rgba(0,0,0,0.12);
+}
+
 /* ─── Light-mode text visibility ─────────────────────── */
 html:not(.dark) .glass h1,
 html:not(.dark) .glass h2,
