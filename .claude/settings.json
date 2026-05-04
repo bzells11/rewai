@@ -1,0 +1,15 @@
+{
+  "hooks": {
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "cd \"/Users/brandonzeller/Documents/CODING/REW AI\" && git diff --quiet && git diff --staged --quiet || (git add -A && git commit -m \"auto: $(date '+%Y-%m-%d %H:%M')\" && git push)",
+            "timeout": 30
+          }
+        ]
+      }
+    ]
+  }
+}
