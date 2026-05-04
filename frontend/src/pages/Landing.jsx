@@ -12,7 +12,7 @@ const FEATURES = [
     icon: Bot,
     color: '#38bdf8',
     title: 'AI Conversations',
-    desc: 'Claude AI texts your sellers, handles objections, and qualifies leads 24/7 — in your voice, never robotic.',
+    desc: 'Claude AI texts your sellers, handles objections, and qualifies leads 24/7, in your voice, never robotic.',
   },
   {
     icon: Flame,
@@ -30,7 +30,7 @@ const FEATURES = [
     icon: LayoutDashboard,
     color: '#34d399',
     title: 'Kanban Pipeline',
-    desc: 'Drag leads from cold to warm to hot. See every conversation at a glance — no more scattered spreadsheets.',
+    desc: 'Drag leads from cold to warm to hot. See every conversation at a glance. No more scattered spreadsheets.',
   },
   {
     icon: Upload,
@@ -42,7 +42,7 @@ const FEATURES = [
     icon: UserCheck,
     color: '#38bdf8',
     title: 'Manual Takeover',
-    desc: 'Step in on any thread with one click. AI hands off cleanly and you close — no awkward context switching.',
+    desc: 'Step in on any thread with one click. AI hands off cleanly and you close. No awkward context switching.',
   },
 ];
 
@@ -55,7 +55,7 @@ const STEPS = [
   {
     num: '02',
     title: 'AI texts your sellers',
-    desc: 'Your AI sends a personalized intro message and handles the full back-and-forth — qualifying, following up, answering questions, handling objections.',
+    desc: 'Your AI sends a personalized intro message and handles the full back-and-forth: qualifying, following up, answering questions, handling objections.',
   },
   {
     num: '03',
@@ -190,7 +190,7 @@ export default function Landing() {
             </h1>
 
             <p className="fade-up-2 text-lg text-text-secondary leading-relaxed mb-10 max-w-lg">
-              REW AI handles every follow-up conversation with your leads — qualifying sellers, answering questions, and surfacing hot deals automatically.
+              REW AI handles every follow-up conversation with your leads, qualifying sellers, answering questions, and surfacing hot deals automatically.
             </p>
 
             <div className="fade-up-3 flex flex-col sm:flex-row items-start gap-4">
@@ -212,7 +212,7 @@ export default function Landing() {
             <p className="text-xs text-muted mt-5">No credit card required · Cancel anytime</p>
           </div>
 
-          {/* Right — SMS mock-up */}
+          {/* Right: SMS mock-up */}
           <div className="hidden lg:flex justify-center">
             <div className="float relative w-80">
               <div className="rounded-3xl border border-dim/10 bg-dim/3 backdrop-blur-xl overflow-hidden shadow-2xl"
@@ -228,7 +228,7 @@ export default function Landing() {
                   <div className="flex justify-end">
                     <div className="max-w-[85%]">
                       <div className="bg-accent text-bg text-xs leading-relaxed px-3.5 py-2.5 rounded-2xl rounded-br-sm">
-                        Hey John! This is Brandon from REW AI — I saw your property at 742 Maple Ave and wanted to reach out. Still looking to sell?
+                        Hey John! This is Brandon from REW AI. I saw your property at 742 Maple Ave and wanted to reach out. Still looking to sell?
                       </div>
                       <div className="flex items-center justify-end gap-1 mt-1 pr-1">
                         <Bot size={9} className="text-accent/50" />
@@ -269,7 +269,7 @@ export default function Landing() {
 
                   <div className="flex items-center gap-2 bg-red-500/8 border border-red-500/15 rounded-xl px-3 py-2.5 mt-2">
                     <Flame size={13} className="text-red-400 shrink-0" />
-                    <span className="text-[11px] text-red-400 font-medium">Hot lead flagged — ready to hand off to you</span>
+                    <span className="text-[11px] text-red-400 font-medium">Hot lead flagged, ready to hand off to you</span>
                   </div>
                 </div>
               </div>
@@ -488,7 +488,7 @@ export default function Landing() {
             Stop losing deals to<br />slow follow-up
           </h2>
           <p className="text-lg text-text-secondary mb-10 leading-relaxed">
-            Every day you wait, motivated sellers are talking to someone else. REW AI keeps your pipeline moving 24/7 — so you don't have to.
+            Every day you wait, motivated sellers are talking to someone else. REW AI keeps your pipeline moving 24/7, so you don't have to.
           </p>
 
           <button
