@@ -365,14 +365,14 @@ export default function Landing() {
             </p>
           </div>
 
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 border border-dim/20 rounded-2xl overflow-hidden divide-y divide-dim/20 md:divide-y-0"
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 border border-dim/8 rounded-2xl overflow-hidden divide-y divide-dim/8 md:divide-y-0"
             style={{ background: 'rgba(255,255,255,0.01)' }}>
             {FEATURES.map(({ icon: Icon, color, title, desc }, i) => (
               <div
                 key={title}
                 className={`feature-cell p-8 transition-colors duration-200
-                  ${i % 3 !== 2 ? 'lg:border-r border-dim/20' : ''}
-                  ${i < 3 ? 'md:border-b border-dim/20' : ''}
+                  ${i % 3 !== 2 ? 'lg:border-r border-dim/8' : ''}
+                  ${i < 3 ? 'md:border-b border-dim/8' : ''}
                 `}
               >
                 <Icon size={22} className="mb-5" style={{ color }} />
