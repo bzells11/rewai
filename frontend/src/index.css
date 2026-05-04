@@ -145,6 +145,10 @@ html:not(.dark) .stat-card-label {
   font-size: 12px !important;
   opacity: 1 !important;
 }
+html:not(.dark) aside a:not(.nav-active):hover {
+  background-color: #e5e4e2 !important;
+  color: #111827 !important;
+}
 html:not(.dark) .sidebar-username {
   color: #111827 !important;
   opacity: 1 !important;
