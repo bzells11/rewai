@@ -171,5 +171,9 @@ html:not(.dark) .lead-card-situation {
 }
 html:not(.dark) .lead-card-price {
   color: #111827 !important;
-  font-weight: 500;
+  font-weight: 500 !important;
+}
+html:not(.dark) [data-col="handed_off"] .col-empty-msg {
+  color: #d1d5db !important;
+  font-size: 12px !important;
 }

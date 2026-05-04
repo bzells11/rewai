@@ -38,7 +38,7 @@ function KanbanColumn({ col, leads, compact }) {
   const bgOver   = col.color + '1f';
 
   return (
-    <div ref={setNodeRef} className="w-72 flex flex-col">
+    <div ref={setNodeRef} data-col={col.key} className="w-72 flex flex-col">
       {/* Column header */}
       <div className="flex items-center gap-2 mb-3 px-0.5">
         <span className="w-2 h-2 rounded-full shrink-0" style={{ background: col.color }} />
@@ -57,7 +57,7 @@ function KanbanColumn({ col, leads, compact }) {
       >
         {leads.length === 0 && (
           <div className="min-h-[80px] flex items-center justify-center px-3">
-            <span className="text-xs text-muted text-center">{COLUMN_EMPTY_MSG[col.key]}</span>
+            <span className="col-empty-msg text-xs text-muted text-center">{COLUMN_EMPTY_MSG[col.key]}</span>
           </div>
         )}
         {leads.map(lead => (
