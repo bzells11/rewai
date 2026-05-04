@@ -84,6 +84,8 @@ export default function Settings() {
       queryClient.invalidateQueries({ queryKey: ['campaigns'] });
       setSaved(true);
       setTimeout(() => setSaved(false), 2500);
+    } catch (err) {
+      alert('Save failed: ' + err.message);
     } finally {
       setSaving(false);
     }
