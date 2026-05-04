@@ -1,151 +1,66 @@
-import Anthropic from 'anthropic';
+// MOCK AI SERVICE — swap this file for the real Claude/Gemini implementation when ready
 
-const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
-const MODEL = 'claude-sonnet-4-6';
+const REPLY_POOL = [
+  "Hey, thanks for reaching out — are you still looking to sell the property?",
+  "Got it, appreciate you sharing that — what kind of timeline are you working with?",
+  "That makes sense — have you had a chance to think about what price range would work for you?",
+  "Totally understand the situation — would a fast cash offer with a flexible closing date help?",
+  "Thanks for letting me know — is the property currently occupied or vacant?",
+  "Appreciate your time — what's the biggest thing you need from a buyer right now?",
+];
 
-const CONVERSATION_SYSTEM = `You are an AI assistant texting motivated home sellers on behalf of a real estate wholesaler. Your job is to have natural, empathetic SMS conversations that build rapport and qualify leads.
+const FOLLOWUP_POOL = [
+  "Hey {name}, just checking in — still interested in a cash offer on the property?",
+  "Hi {name}, wanted to follow up — is selling still something you're considering?",
+  "Hey {name}, touching base again — any update on the property at {address}?",
+  "Hi {name}, still here if you're open to a quick cash offer — any interest?",
+  "Hey {name}, just wanted to check — has anything changed with the property?",
+];
 
-Qualification goals (work toward these naturally — never all at once):
-- Why are they selling?
-- What's their timeline?
-- What price range do they need?
-- What's the property condition?
-
-Rules:
-- Keep every message to 2-4 sentences max — this is SMS, not email
-- Sound like a real person, never a bot
-- Match the seller's energy and brevity
-- Be empathetic if they're distressed — lead with that before business
-- Never make up offer amounts or guarantees
-- Don't discuss specific numbers — that's for the human wholesaler
-- If they're clearly not interested or hostile, acknowledge it and close gracefully`;
-
-const SENTIMENT_SYSTEM = `You classify real estate seller leads from SMS transcripts. Always respond with exactly one word.
-
-Classifications:
-cold = no response or unsubscribe request
-active = engaged but not yet qualified
-warm = interested, has shared timeline or price range
-hot = highly motivated, wants to move fast or get an offer
-dead = explicitly not interested, listed with agent, or hostile`;
-
-const EXTRACT_SYSTEM = `You extract structured lead data from real estate SMS conversations. Always respond with valid JSON only — no explanation.`;
-
-export async function generateReply({ lead, conversationHistory, wholesalerName, companyName, buyingArea }) {
-  const messages = conversationHistory.map(msg => ({
-    role: msg.direction === 'inbound' ? 'user' : 'assistant',
-    content: msg.body,
-  }));
-
-  const response = await client.messages.create({
-    model: MODEL,
-    max_tokens: 300,
-    system: [
-      {
-        type: 'text',
-        text: CONVERSATION_SYSTEM,
-        cache_control: { type: 'ephemeral' },
-      },
-      {
-        type: 'text',
-        text: `You are texting on behalf of ${wholesalerName} from ${companyName}. They buy houses in ${buyingArea || 'your area'}.
-
-Lead: ${lead.name} | ${lead.address || 'address unknown'} | Status: ${lead.status}${lead.situation ? ` | Situation: ${lead.situation}` : ''}`,
-      },
-    ],
-    messages,
-  });
-
-  return response.content[0].text.trim();
+function pick(pool) {
+  return pool[Math.floor(Math.random() * pool.length)];
 }
 
-export async function generateFollowUp({ lead, attemptNumber, wholesalerName, companyName }) {
-  const response = await client.messages.create({
-    model: MODEL,
-    max_tokens: 150,
-    system: [
-      {
-        type: 'text',
-        text: CONVERSATION_SYSTEM,
-        cache_control: { type: 'ephemeral' },
-      },
-    ],
-    messages: [
-      {
-        role: 'user',
-        content: `Write a brief, natural follow-up SMS (attempt #${attemptNumber}) to ${lead.name} who owns a property at ${lead.address || 'their property'}. They haven't responded yet. This is from ${wholesalerName} at ${companyName}. Keep it 1-2 sentences, casual and genuine — not salesy.`,
-      },
-    ],
-  });
+export async function generateReply({ lead }) {
+  return pick(REPLY_POOL);
+}
 
-  return response.content[0].text.trim();
+export async function generateFollowUp({ lead, attemptNumber }) {
+  return pick(FOLLOWUP_POOL)
+    .replace('{name}', lead.name.split(' ')[0])
+    .replace('{address}', lead.address || 'your property');
 }
 
 export async function classifySentiment({ conversationHistory }) {
-  const transcript = conversationHistory
-    .map(m => `${m.direction === 'inbound' ? 'Seller' : 'Wholesaler'}: ${m.body}`)
-    .join('\n');
+  const lastInbound = [...conversationHistory]
+    .reverse()
+    .find(m => m.direction === 'inbound');
 
-  const response = await client.messages.create({
-    model: MODEL,
-    max_tokens: 10,
-    system: [
-      {
-        type: 'text',
-        text: SENTIMENT_SYSTEM,
-        cache_control: { type: 'ephemeral' },
-      },
-    ],
-    messages: [
-      {
-        role: 'user',
-        content: `Classify this seller:\n\n${transcript}`,
-      },
-    ],
-  });
+  if (!lastInbound) return 'cold';
 
-  const result = response.content[0].text.trim().toLowerCase();
-  const valid = ['cold', 'active', 'warm', 'hot', 'dead'];
-  return valid.includes(result) ? result : 'active';
+  const body = lastInbound.body.toLowerCase();
+  if (/yes|interested|definitely|let's|lets|call|offer|how much/i.test(body)) return 'hot';
+  if (/maybe|possibly|thinking|considering|depends/i.test(body)) return 'warm';
+  if (/not|no|stop|remove|unsubscribe|don't/i.test(body)) return 'dead';
+  return 'active';
 }
 
 export async function extractLeadInfo({ conversationHistory }) {
-  const transcript = conversationHistory
-    .map(m => `${m.direction === 'inbound' ? 'Seller' : 'Wholesaler'}: ${m.body}`)
-    .join('\n');
+  const transcript = conversationHistory.map(m => m.body).join(' ').toLowerCase();
 
-  const response = await client.messages.create({
-    model: MODEL,
-    max_tokens: 250,
-    system: [
-      {
-        type: 'text',
-        text: EXTRACT_SYSTEM,
-        cache_control: { type: 'ephemeral' },
-      },
-    ],
-    messages: [
-      {
-        role: 'user',
-        content: `Extract info from this conversation. Return JSON with these keys (null if unknown):
-{
-  "situation": "brief reason for selling",
-  "asking_price": number or null,
-  "timeline": "timeline string or null",
-  "ai_notes": "1-2 sentence wholesaler summary"
-}
+  const asking_price = transcript.match(/\$?([\d,]+)k?\b/)?.[1]
+    ? parseInt(transcript.match(/\$?([\d,]+)k?\b/)[1].replace(',', '')) * (transcript.includes('k') ? 1000 : 1)
+    : null;
 
-Conversation:
-${transcript}`,
-      },
-    ],
-  });
-
-  try {
-    const text = response.content[0].text.trim();
-    const json = text.replace(/^```json\n?/, '').replace(/\n?```$/, '');
-    return JSON.parse(json);
-  } catch {
-    return { situation: null, asking_price: null, timeline: null, ai_notes: null };
-  }
+  return {
+    situation: transcript.includes('divorce') ? 'Going through divorce' :
+               transcript.includes('inherit') ? 'Inherited property' :
+               transcript.includes('behind') || transcript.includes('foreclosure') ? 'Behind on payments' :
+               null,
+    asking_price,
+    timeline: transcript.includes('asap') || transcript.includes('fast') ? 'ASAP' :
+              transcript.includes('month') ? 'Within a few months' :
+              null,
+    ai_notes: `Mock lead — ${conversationHistory.length} messages exchanged.`,
+  };
 }

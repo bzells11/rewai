@@ -1,7 +1,34 @@
 {
   "permissions": {
     "allow": [
-      "Bash(git add *)"
+      "Bash(git add *)",
+      "Bash(git commit -m ' *)",
+      "Bash(npm install *)",
+      "Bash(npm show *)",
+      "Bash(npm run *)",
+      "Bash(curl -s http://localhost:5173)",
+      "Bash(ngrok version *)",
+      "Bash(brew install *)",
+      "Bash(npx vite *)",
+      "Bash(lsof -ti:5173)",
+      "Bash(xargs sed *)",
+      "Bash(sed -i '' 's|src=\"/logo.png\" alt=\"REW AI\" className=\"h-6 w-auto\"|src=\"/logo.png\" alt=\"REW AI\" className=\"h-6 w-auto logo-img\"|g' components/Layout.jsx)",
+      "Bash(sed -i '' 's|src=\"/logo.png\" alt=\"REW AI\" className=\"h-7 w-auto\"|src=\"/logo.png\" alt=\"REW AI\" className=\"h-7 w-auto logo-img\"|g' pages/Landing.jsx)",
+      "Bash(sed -i '' 's|src=\"/logo.png\" alt=\"REW AI\" className=\"h-6 w-auto\"|src=\"/logo.png\" alt=\"REW AI\" className=\"h-6 w-auto logo-img\"|g' pages/Landing.jsx)",
+      "Bash(sed -i '' 's|src=\"/logo.png\" alt=\"REW AI\" className=\"h-8 w-auto\"|src=\"/logo.png\" alt=\"REW AI\" className=\"h-8 w-auto logo-img\"|g' pages/Login.jsx)",
+      "Bash(node --input-type=module)",
+      "Bash(grep -v \"^$\")",
+      "Bash(python3 -c ' *)",
+      "Bash(node -e \"import\\('stripe'\\).then\\(m => console.log\\('stripe ok', m.default.version ?? 'loaded'\\)\\)\")",
+      "Bash(curl -s http://localhost:3001/health)",
+      "Bash(pkill -f \"node src/index.js\")",
+      "Bash(pkill -f \"nodemon\")",
+      "Bash(xargs kill *)",
+      "Bash(node src/index.js)",
+      "Bash(grep -v \"^$\" \"/Users/brandonzeller/Documents/CODING/REW AI/backend/.env\")",
+      "Bash(gh auth *)",
+      "Bash(git remote *)",
+      "Bash(git push *)"
     ]
   }
 }

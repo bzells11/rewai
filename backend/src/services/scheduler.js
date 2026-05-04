@@ -106,11 +106,54 @@ async function processDueFollowUps() {
   }
 }
 
+// Soft-delete handed_off leads older than each user's retention setting
+async function autoDeleteHandedOff() {
+  const { data: users } = await supabaseAdmin
+    .from('users')
+    .select('id, handoff_retention_days');
+  if (!users?.length) return;
+
+  for (const user of users) {
+    const days = user.handoff_retention_days ?? 30;
+    const cutoff = new Date(Date.now() - days * 24 * 60 * 60 * 1000).toISOString();
+
+    await supabaseAdmin
+      .from('leads')
+      .update({ deleted_at: new Date().toISOString() })
+      .eq('user_id', user.id)
+      .eq('status', 'handed_off')
+      .is('deleted_at', null)
+      .lt('last_contact_at', cutoff);
+  }
+  console.log('[scheduler] auto-deleted old handed_off leads');
+}
+
+// Permanently remove leads that have been soft-deleted for 30+ days
+async function permanentlyDeleteOld() {
+  const cutoff = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
+  const { error } = await supabaseAdmin
+    .from('leads')
+    .delete()
+    .not('deleted_at', 'is', null)
+    .lt('deleted_at', cutoff);
+  if (!error) console.log('[scheduler] permanently deleted old soft-deleted leads');
+}
+
 export function startScheduler() {
-  // Run every 15 minutes
+  // Follow-up messages — every 15 minutes
   cron.schedule('*/15 * * * *', async () => {
     console.log('[scheduler] checking for due follow-ups...');
     await processDueFollowUps();
+  });
+
+  // Auto-delete handed_off leads — daily at 2am
+  cron.schedule('0 2 * * *', async () => {
+    await autoDeleteHandedOff();
+  });
+
+  // Permanently delete leads in trash > 30 days — daily at 3am
+  cron.schedule('0 3 * * *', async () => {
+    await permanentlyDeleteOld();
   });
 
   console.log('[scheduler] started');

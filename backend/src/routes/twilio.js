@@ -46,6 +46,17 @@ router.post('/webhook', express.urlencoded({ extended: false }), async (req, res
     // Cancel pending follow-ups — they responded
     await cancelPendingFollowUps(lead.id);
 
+    // Opt-out detection — stop all contact immediately
+    const optOutPattern = /\b(stop|unsubscribe|remove me|remove|opt.?out|cancel|quit|end)\b/i;
+    if (optOutPattern.test(messageBody)) {
+      await supabaseAdmin.from('leads').update({
+        status: 'dead',
+        ai_enabled: false,
+        last_contact_at: new Date().toISOString(),
+      }).eq('id', lead.id);
+      return;
+    }
+
     // If wholesaler has taken over, stop AI
     if (!lead.ai_enabled) return;
 

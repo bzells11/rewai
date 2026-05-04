@@ -1,13 +1,15 @@
 import { useNavigate } from 'react-router-dom';
-import { MessageSquare, Clock } from 'lucide-react';
+import { useDraggable } from '@dnd-kit/core';
+import { CSS } from '@dnd-kit/utilities';
+import { Clock } from 'lucide-react';
 
 const STATUS_LABELS = {
-  cold: 'Cold',
-  active: 'Active',
-  warm: 'Warm',
-  hot: 'Hot',
-  handed_off: 'Handed Off',
-  dead: 'Dead',
+  cold:       'Cold',
+  active:     'Active',
+  warm:       'Warm',
+  hot:        'Hot',
+  handed_off: 'Won',
+  dead:       'Dead',
 };
 
 function timeAgo(dateStr) {
@@ -20,50 +22,63 @@ function timeAgo(dateStr) {
   return `${Math.floor(hrs / 24)}d ago`;
 }
 
-export default function LeadCard({ lead }) {
+export default function LeadCard({ lead, isDragging, compact }) {
   const navigate = useNavigate();
-  const isHot = lead.status === 'hot';
+
+  const { attributes, listeners, setNodeRef, transform, isDragging: isCurrentlyDragging } = useDraggable({
+    id: lead.id,
+  });
+
+  const style = transform ? { transform: CSS.Translate.toString(transform) } : undefined;
 
   return (
     <div
-      onClick={() => navigate(`/leads/${lead.id}`)}
-      className={`glass rounded-xl p-4 cursor-pointer transition-all duration-200
-        ${isHot ? 'border-red-500/30 shadow-[0_0_12px_rgba(239,68,68,0.1)]' : ''}
+      ref={setNodeRef}
+      style={style}
+      {...listeners}
+      {...attributes}
+      onClick={() => !isCurrentlyDragging && navigate(`/leads/${lead.id}`)}
+      className={`glass rounded-xl p-3.5 cursor-pointer select-none touch-none
+        ${isCurrentlyDragging ? 'opacity-30' : ''}
+        ${isDragging ? 'shadow-2xl rotate-1 opacity-100' : ''}
       `}
     >
-      {/* Header */}
-      <div className="flex items-start justify-between gap-2 mb-2">
-        <div>
-          <p className="font-display font-semibold text-text-primary text-sm leading-tight">{lead.name}</p>
-          {lead.address && (
-            <p className="text-xs text-muted mt-0.5 truncate max-w-[160px]">{lead.address}</p>
-          )}
-        </div>
+      {/* Name + status badge */}
+      <div className="flex items-start justify-between gap-2 mb-1.5">
+        <p className="font-display font-semibold text-text-primary text-sm leading-snug">
+          {lead.name}
+        </p>
         <span className={`text-[10px] font-medium px-2 py-0.5 rounded-full shrink-0 status-${lead.status}`}>
           {STATUS_LABELS[lead.status] || lead.status}
         </span>
       </div>
 
+      {/* Address */}
+      {!compact && lead.address && (
+        <p className="text-xs text-muted truncate mb-2 max-w-[190px]">{lead.address}</p>
+      )}
+
       {/* AI notes or situation */}
-      {(lead.ai_notes || lead.situation) && (
+      {!compact && (lead.ai_notes || lead.situation) && (
         <p className="text-xs text-text-secondary mb-3 line-clamp-2 leading-relaxed">
           {lead.ai_notes || lead.situation}
         </p>
       )}
 
       {/* Footer */}
-      <div className="flex items-center gap-3 text-[11px] text-muted">
+      <div className="flex items-center gap-3 text-[11px] text-muted pt-1 border-t border-black/5">
         <span className="flex items-center gap-1">
           <Clock size={11} />
           {timeAgo(lead.last_contact_at)}
         </span>
         {lead.asking_price && (
-          <span className="flex items-center gap-1 text-text-secondary">
-            ${lead.asking_price.toLocaleString()}
+          <span className="flex items-center gap-1 ml-auto">
+            <span className="text-muted/60">Asking</span>
+            <span className="font-medium text-text-secondary">${lead.asking_price.toLocaleString()}</span>
           </span>
         )}
-        {!lead.ai_enabled && (
-          <span className="ml-auto text-amber-400 font-medium">Manual</span>
+        {!lead.ai_enabled && !lead.asking_price && (
+          <span className="ml-auto text-amber-500 font-medium">Manual</span>
         )}
       </div>
     </div>

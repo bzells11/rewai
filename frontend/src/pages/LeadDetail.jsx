@@ -6,7 +6,7 @@ import { ArrowLeft, Bot, User, Calendar, DollarSign, Clock, MapPin } from 'lucid
 
 const STATUS_LABELS = {
   cold: 'Cold', active: 'Active', warm: 'Warm',
-  hot: 'Hot', handed_off: 'Handed Off', dead: 'Dead',
+  hot: 'Hot', handed_off: 'Won', dead: 'Dead',
 };
 
 const STATUS_OPTIONS = ['cold', 'active', 'warm', 'hot', 'handed_off', 'dead'];
@@ -75,7 +75,7 @@ export default function LeadDetail() {
             <select
               value={lead.status}
               onChange={e => updateStatus(e.target.value)}
-              className={`w-full bg-white/5 border border-border rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-accent/50 status-${lead.status}`}
+              className={`w-full bg-dim/5 border border-border rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-accent/50 status-${lead.status}`}
             >
               {STATUS_OPTIONS.map(s => (
                 <option key={s} value={s}>{STATUS_LABELS[s]}</option>
@@ -86,14 +86,14 @@ export default function LeadDetail() {
           {/* AI toggle */}
           <button
             onClick={toggleAI}
-            className={`mt-4 w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-medium transition-all
+            className={`mt-4 w-full flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-semibold transition-all border
               ${lead.ai_enabled
-                ? 'bg-accent-dim border border-accent-border text-accent hover:bg-accent/20'
-                : 'bg-amber-500/10 border border-amber-500/20 text-amber-400 hover:bg-amber-500/20'
+                ? 'bg-accent text-white border-accent/80 hover:bg-accent/90'
+                : 'bg-amber-500/15 border-amber-500/40 text-amber-500 hover:bg-amber-500/25'
               }`}
           >
             {lead.ai_enabled ? <Bot size={15} /> : <User size={15} />}
-            {lead.ai_enabled ? 'AI Managing — Take Over' : 'Manual Mode — Re-enable AI'}
+            {lead.ai_enabled ? 'AI Managing — Click to Take Over' : 'You Are Managing — Re-enable AI'}
           </button>
         </div>
 
@@ -142,7 +142,7 @@ export default function LeadDetail() {
                   <span className={`px-2 py-0.5 rounded-full ${
                     s.status === 'pending' ? 'text-accent bg-accent-dim' :
                     s.status === 'sent' ? 'text-green-400 bg-green-400/10' :
-                    'text-muted bg-white/5'
+                    'text-muted bg-dim/5'
                   }`}>{s.status}</span>
                 </div>
               ))}

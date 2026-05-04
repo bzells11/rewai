@@ -8,20 +8,41 @@ const router = express.Router();
 
 router.use(requireAuth);
 
-// GET /leads — list all leads for the current user
+// GET /leads — list all leads for the current user (excludes soft-deleted)
 router.get('/', async (req, res) => {
   const { status, limit = 200 } = req.query;
 
-  let query = supabaseAdmin
+  const buildQuery = (filterDeleted) => {
+    let q = supabaseAdmin
+      .from('leads')
+      .select('id, name, phone, address, status, situation, asking_price, timeline, ai_notes, ai_enabled, imported_at, last_contact_at')
+      .eq('user_id', req.userId)
+      .order('imported_at', { ascending: false })
+      .limit(Number(limit));
+    if (filterDeleted) q = q.is('deleted_at', null);
+    if (status) q = q.eq('status', status);
+    return q;
+  };
+
+  let { data, error } = await buildQuery(true);
+
+  // If deleted_at column doesn't exist yet, fall back without the filter
+  if (error?.code === '42703') {
+    ({ data, error } = await buildQuery(false));
+  }
+
+  if (error) return res.status(500).json({ error: error.message });
+  res.json(data);
+});
+
+// GET /leads/deleted — soft-deleted leads recoverable within 30 days
+router.get('/deleted', async (req, res) => {
+  const { data, error } = await supabaseAdmin
     .from('leads')
-    .select('id, name, phone, address, status, situation, asking_price, timeline, ai_notes, ai_enabled, imported_at, last_contact_at')
+    .select('id, name, phone, address, status, deleted_at, last_contact_at')
     .eq('user_id', req.userId)
-    .order('imported_at', { ascending: false })
-    .limit(Number(limit));
-
-  if (status) query = query.eq('status', status);
-
-  const { data, error } = await query;
+    .not('deleted_at', 'is', null)
+    .order('deleted_at', { ascending: false });
   if (error) return res.status(500).json({ error: error.message });
   res.json(data);
 });
@@ -54,14 +75,14 @@ router.get('/:id', async (req, res) => {
 
 // POST /leads — create a single lead
 router.post('/', async (req, res) => {
-  const { name, phone, address } = req.body;
+  const { name, phone, address, situation } = req.body;
   if (!name || !phone) return res.status(400).json({ error: 'name and phone are required' });
 
   const normalizedPhone = normalizePhone(phone);
 
   const { data: lead, error } = await supabaseAdmin
     .from('leads')
-    .insert({ user_id: req.userId, name, phone: normalizedPhone, address })
+    .insert({ user_id: req.userId, name, phone: normalizedPhone, address, situation: situation || null })
     .select()
     .single();
 
@@ -79,23 +100,47 @@ router.post('/bulk', async (req, res) => {
   const { leads } = req.body;
   if (!Array.isArray(leads) || !leads.length) return res.status(400).json({ error: 'leads array required' });
 
-  const normalized = leads.map(l => ({
-    user_id: req.userId,
-    name: l.name,
-    phone: normalizePhone(l.phone),
-    address: l.address || null,
-  }));
+  const normalized = leads
+    .map(l => ({
+      user_id: req.userId,
+      name: l.name,
+      phone: normalizePhone(l.phone),
+      address: l.address || null,
+      situation: l.situation || null,
+      asking_price: l.asking_price ? Number(String(l.asking_price).replace(/[^0-9.]/g, '')) || null : null,
+      timeline: l.timeline || null,
+    }))
+    .filter(l => l.name && l.phone);
+
+  console.log('[bulk] normalized count:', normalized.length, 'sample:', JSON.stringify(normalized[0]));
+  if (!normalized.length) return res.json({ imported: 0 });
+
+  // Fetch existing phones for this user (including soft-deleted) to skip duplicates
+  const phones = normalized.map(l => l.phone);
+  const { data: existing, error: existErr } = await supabaseAdmin
+    .from('leads')
+    .select('phone')
+    .eq('user_id', req.userId)
+    .in('phone', phones);
+
+  console.log('[bulk] existing phones check error:', existErr?.message);
+  console.log('[bulk] existing count:', existing?.length, 'toCheck phones:', phones.slice(0, 3));
+
+  const existingPhones = new Set((existing || []).map(l => l.phone));
+  const toInsert = normalized.filter(l => !existingPhones.has(l.phone));
+
+  console.log('[bulk] toInsert count:', toInsert.length);
+  if (!toInsert.length) return res.json({ imported: 0 });
 
   const { data: inserted, error } = await supabaseAdmin
     .from('leads')
-    .upsert(normalized, { onConflict: 'user_id,phone', ignoreDuplicates: true })
+    .insert(toInsert)
     .select('id');
 
+  console.log('[bulk] insert error:', error?.message, 'inserted:', inserted?.length);
   if (error) return res.status(500).json({ error: error.message });
 
-  // Create follow-up schedules for all newly inserted leads
   await Promise.all((inserted || []).map(l => createFollowUpSchedule(l.id)));
-
   res.json({ imported: inserted?.length || 0 });
 });
 
@@ -127,6 +172,30 @@ router.patch('/:id', async (req, res) => {
     .select()
     .single();
 
+  if (error) return res.status(500).json({ error: error.message });
+  res.json(data);
+});
+
+// DELETE /leads/:id — soft delete (moves to Recently Deleted)
+router.delete('/:id', async (req, res) => {
+  const { error } = await supabaseAdmin
+    .from('leads')
+    .update({ deleted_at: new Date().toISOString() })
+    .eq('id', req.params.id)
+    .eq('user_id', req.userId);
+  if (error) return res.status(500).json({ error: error.message });
+  res.status(204).end();
+});
+
+// POST /leads/:id/restore — recover a soft-deleted lead
+router.post('/:id/restore', async (req, res) => {
+  const { data, error } = await supabaseAdmin
+    .from('leads')
+    .update({ deleted_at: null })
+    .eq('id', req.params.id)
+    .eq('user_id', req.userId)
+    .select()
+    .single();
   if (error) return res.status(500).json({ error: error.message });
   res.json(data);
 });

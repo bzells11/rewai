@@ -6,13 +6,25 @@ const router = express.Router();
 
 router.use(requireAuth);
 
-// GET /users/me
+// GET /users/me — auto-creates the users row if missing (handles new signups)
 router.get('/me', async (req, res) => {
-  const { data, error } = await supabaseAdmin
+  let { data, error } = await supabaseAdmin
     .from('users')
-    .select('id, email, name, company_name, buying_area, twilio_number, plan, created_at')
+    .select('id, email, name, company_name, buying_area, twilio_number, plan, handoff_retention_days, created_at')
     .eq('id', req.userId)
     .single();
+
+  // PGRST116 = no rows found — create the row for this auth user
+  if (error?.code === 'PGRST116') {
+    const { data: { user: authUser } } = await supabaseAdmin.auth.admin.getUserById(req.userId);
+    const { data: created, error: insertErr } = await supabaseAdmin
+      .from('users')
+      .insert({ id: req.userId, email: authUser?.email ?? '', plan: 'starter' })
+      .select('id, email, name, company_name, buying_area, twilio_number, plan, created_at')
+      .single();
+    if (insertErr) return res.status(500).json({ error: insertErr.message });
+    return res.json(created);
+  }
 
   if (error) return res.status(500).json({ error: error.message });
   res.json(data);
@@ -20,7 +32,7 @@ router.get('/me', async (req, res) => {
 
 // PATCH /users/me
 router.patch('/me', async (req, res) => {
-  const allowed = ['name', 'company_name', 'buying_area', 'twilio_number', 'twilio_sid', 'twilio_auth_token'];
+  const allowed = ['name', 'company_name', 'buying_area', 'twilio_number', 'twilio_sid', 'twilio_auth_token', 'handoff_retention_days'];
   const updates = Object.fromEntries(
     Object.entries(req.body).filter(([k]) => allowed.includes(k))
   );
@@ -31,7 +43,7 @@ router.patch('/me', async (req, res) => {
     .from('users')
     .update(updates)
     .eq('id', req.userId)
-    .select('id, email, name, company_name, buying_area, twilio_number, plan')
+    .select('id, email, name, company_name, buying_area, twilio_number, plan, handoff_retention_days')
     .single();
 
   if (error) return res.status(500).json({ error: error.message });

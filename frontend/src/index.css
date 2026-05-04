@@ -2,59 +2,132 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ─── Light (default) ─────────────────────────────────── */
 :root {
-  color-scheme: dark;
+  color-scheme: light;
+  --bg-rgb:          241 244 249;      /* cool light-gray canvas */
+  --sidebar:         #ffffff;
+  --text-primary:    #111827;
+  --text-secondary:  #4b5563;
+  --muted:           #9ca3af;
+  --accent-rgb:      14 165 233;       /* sky-500 */
+  --dim-rgb:         0 0 0;
+  --border:          rgba(0,0,0,0.07);
+  --border-subtle:   rgba(0,0,0,0.04);
+  --glass-bg:        #ffffff;
+  --glass-border-hover: rgba(14,165,233,0.30);
+  --scrollbar-thumb: rgba(0,0,0,0.12);
+  --input-bg:        #ffffff;
+  --input-border:    rgba(0,0,0,0.12);
+  --fab-glow:        rgba(14,165,233,0.18);
+  --nav-active-bg:   rgba(14,165,233,0.09);
+  --card-shadow:     0 1px 2px rgba(0,0,0,0.05), 0 2px 8px rgba(0,0,0,0.06);
+  --card-shadow-hover: 0 4px 16px rgba(0,0,0,0.10);
 }
 
+/* ─── Dark ────────────────────────────────────────────── */
+html.dark {
+  color-scheme: dark;
+  --bg-rgb:          13 17 23;
+  --sidebar:         #0d1117;
+  --text-primary:    #f1f5f9;
+  --text-secondary:  #94a3b8;
+  --muted:           #64748b;
+  --accent-rgb:      56 189 248;
+  --dim-rgb:         255 255 255;
+  --border:          rgba(255,255,255,0.08);
+  --border-subtle:   rgba(255,255,255,0.04);
+  --glass-bg:        rgba(255,255,255,0.04);
+  --glass-border-hover: rgba(56,189,248,0.22);
+  --scrollbar-thumb: rgba(255,255,255,0.10);
+  --input-bg:        rgba(255,255,255,0.05);
+  --input-border:    rgba(255,255,255,0.10);
+  --fab-glow:        rgba(56,189,248,0.20);
+  --nav-active-bg:   rgba(56,189,248,0.10);
+  --card-shadow:     none;
+  --card-shadow-hover: 0 4px 24px rgba(0,0,0,0.40);
+}
+
+/* ─── Base ────────────────────────────────────────────── */
 body {
-  background-color: #07090f;
-  color: #f1f5f9;
+  background-color: rgb(var(--bg-rgb));
+  color: var(--text-primary);
   font-family: 'Inter', sans-serif;
   -webkit-font-smoothing: antialiased;
 }
 
-/* Dot grid background */
+/* noise grain — barely visible, adds depth without a pattern */
 body::before {
   content: '';
   position: fixed;
   inset: 0;
-  background-image: radial-gradient(rgba(255,255,255,0.06) 1px, transparent 1px);
-  background-size: 28px 28px;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+  background-repeat: repeat;
+  background-size: 200px 200px;
+  opacity: 0.025;
   pointer-events: none;
   z-index: 0;
 }
 
-#root {
-  position: relative;
-  z-index: 1;
-}
+#root { position: relative; z-index: 1; }
 
-/* Custom scrollbar */
 ::-webkit-scrollbar { width: 4px; }
 ::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 2px; }
-::-webkit-scrollbar-thumb:hover { background: rgba(56,189,248,0.3); }
+::-webkit-scrollbar-thumb { background: var(--scrollbar-thumb); border-radius: 2px; }
+::-webkit-scrollbar-thumb:hover { background: rgb(var(--accent-rgb) / 0.4); }
 
-/* Glass card base */
+/* ─── Cards ───────────────────────────────────────────── */
 .glass {
-  background: rgba(255,255,255,0.03);
-  border: 1px solid rgba(255,255,255,0.08);
+  background: var(--glass-bg);
+  border: 1px solid var(--border);
+  box-shadow: var(--card-shadow);
+  transition: box-shadow 0.15s ease, border-color 0.15s ease;
+}
+.glass:hover {
+  border-color: var(--glass-border-hover);
+  box-shadow: var(--card-shadow-hover);
+}
+html.dark .glass {
   backdrop-filter: blur(8px);
 }
 
-.glass:hover {
-  border-color: rgba(56,189,248,0.2);
-  transform: translateY(-2px);
-  transition: all 0.2s ease;
+/* ─── Nav active ──────────────────────────────────────── */
+.nav-active {
+  background: var(--nav-active-bg) !important;
+  color: rgb(var(--accent-rgb)) !important;
 }
 
-/* Status badge colors */
-.status-cold    { background: rgba(100,116,139,0.2); color: #94a3b8; }
-.status-active  { background: rgba(56,189,248,0.15); color: #38bdf8; }
-.status-warm    { background: rgba(251,191,36,0.15); color: #fbbf24; }
-.status-hot     { background: rgba(239,68,68,0.2); color: #f87171; }
-.status-handed_off { background: rgba(74,222,128,0.15); color: #4ade80; }
-.status-dead    { background: rgba(100,116,139,0.1); color: #475569; }
+/* ─── FAB glow ────────────────────────────────────────── */
+.fab-glow      { box-shadow: 0 0 16px var(--fab-glow); }
+.fab-glow-open { box-shadow: 0 0 28px var(--fab-glow); }
+
+/* ─── Logo — white asset, filtered per theme ─────────── */
+.logo-white {
+  filter: brightness(0);               /* white → black on light sidebar */
+}
+html.dark .logo-white {
+  filter: brightness(0) invert(1);     /* black → white on dark sidebar */
+}
+
+/* ─── Inputs ──────────────────────────────────────────── */
+input, textarea, select {
+  background-color: var(--input-bg);
+  border-color: var(--input-border);
+}
+
+/* ─── Status badges ───────────────────────────────────── */
+.status-cold       { background: rgba(100,116,139,0.10); color: #475569; }
+.status-active     { background: rgb(var(--accent-rgb) / 0.12); color: rgb(var(--accent-rgb)); }
+.status-warm       { background: rgba(245,158,11,0.12);  color: #d97706; }
+.status-hot        { background: rgba(239,68,68,0.12);   color: #dc2626; }
+.status-handed_off { background: rgba(16,185,129,0.12);  color: #059669; }
+.status-dead       { background: rgba(100,116,139,0.07); color: #94a3b8; }
+
+html.dark .status-cold       { background: rgba(100,116,139,0.20); color: #94a3b8; }
+html.dark .status-warm       { background: rgba(251,191,36,0.15);  color: #fbbf24; }
+html.dark .status-hot        { background: rgba(239,68,68,0.20);   color: #f87171; }
+html.dark .status-handed_off { background: rgba(74,222,128,0.15);  color: #4ade80; }
+html.dark .status-dead       { background: rgba(100,116,139,0.10); color: #475569; }
 
 @layer utilities {
   .font-display { font-family: 'Space Grotesk', sans-serif; }
