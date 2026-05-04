@@ -163,9 +163,7 @@ html:not(.dark) input::placeholder,
 html:not(.dark) textarea::placeholder {
   color: #9ca3af !important;
 }
-html:not(.dark) .bg-accent .text-bg,
-html:not(.dark) button.bg-accent,
-html:not(.dark) button[class*="bg-accent"] {
+html:not(.dark) button.bg-accent {
   color: #ffffff !important;
 }
 
