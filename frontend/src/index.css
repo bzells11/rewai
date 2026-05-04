@@ -133,6 +133,24 @@ html.dark .status-dead       { background: rgba(100,116,139,0.10); color: #47556
   .font-display { font-family: 'Space Grotesk', sans-serif; }
 }
 
+/* ─── Light-mode form / input visibility ─────────────── */
+html:not(.dark) input,
+html:not(.dark) textarea,
+html:not(.dark) select {
+  background-color: #f9fafb !important;
+  color: #111827 !important;
+  border-color: #d1d5db !important;
+}
+html:not(.dark) input::placeholder,
+html:not(.dark) textarea::placeholder {
+  color: #9ca3af !important;
+}
+html:not(.dark) .bg-accent .text-bg,
+html:not(.dark) button.bg-accent,
+html:not(.dark) button[class*="bg-accent"] {
+  color: #ffffff !important;
+}
+
 /* ─── Light-mode dashboard overrides ─────────────────── */
 html:not(.dark) .stat-card-value {
   color: #111827 !important;
