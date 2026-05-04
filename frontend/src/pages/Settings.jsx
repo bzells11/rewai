@@ -178,32 +178,6 @@ export default function Settings() {
           />
         </section>
 
-        {/* ── App Appearance ── */}
-        <section className="glass rounded-2xl p-6">
-          <h2 className="font-display font-semibold text-text-primary mb-5">App Appearance</h2>
-          <p className="text-xs text-text-secondary mb-4">Mode</p>
-          <div className="flex gap-3">
-            {[
-              { value: 'dark',  label: 'Dark',  icon: Moon },
-              { value: 'light', label: 'Light', icon: Sun  },
-            ].map(({ value, label, icon: Icon }) => (
-              <button
-                key={value}
-                type="button"
-                onClick={() => theme !== value && toggleTheme()}
-                className={`flex-1 flex flex-col items-center gap-2 py-4 rounded-xl border transition-all duration-150
-                  ${theme === value
-                    ? 'border-accent/40 bg-accent/8 text-accent'
-                    : 'border-border bg-dim/3 text-text-secondary hover:border-accent/20 hover:bg-dim/5'
-                  }`}
-              >
-                <Icon size={18} />
-                <span className="text-xs font-medium">{label}</span>
-              </button>
-            ))}
-          </div>
-        </section>
-
         {/* Lead Retention */}
         <section className="glass rounded-2xl p-6">
           <h2 className="font-display font-semibold text-text-primary mb-1">Lead Retention</h2>
@@ -342,6 +316,32 @@ export default function Settings() {
             ))}
           </div>
         )}
+      </section>
+
+      {/* App Appearance */}
+      <section className="glass rounded-2xl p-6 mt-8">
+        <h2 className="font-display font-semibold text-text-primary mb-5">App Appearance</h2>
+        <p className="text-xs text-text-secondary mb-4">Mode</p>
+        <div className="flex gap-3">
+          {[
+            { value: 'dark',  label: 'Dark',  icon: Moon },
+            { value: 'light', label: 'Light', icon: Sun  },
+          ].map(({ value, label, icon: Icon }) => (
+            <button
+              key={value}
+              type="button"
+              onClick={() => theme !== value && toggleTheme()}
+              className={`flex-1 flex flex-col items-center gap-2 py-4 rounded-xl border transition-all duration-150
+                ${theme === value
+                  ? 'border-accent/40 bg-accent/8 text-accent'
+                  : 'border-border bg-dim/3 text-text-secondary hover:border-accent/20 hover:bg-dim/5'
+                }`}
+            >
+              <Icon size={18} />
+              <span className="text-xs font-medium">{label}</span>
+            </button>
+          ))}
+        </div>
       </section>
 
       {/* Account */}
