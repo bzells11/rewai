@@ -145,6 +145,10 @@ html:not(.dark) .stat-card-label {
   font-size: 12px !important;
   opacity: 1 !important;
 }
+html:not(.dark) .sidebar-username {
+  color: #111827 !important;
+  opacity: 1 !important;
+}
 html:not(.dark) .lead-card-name {
   color: #111827 !important;
   opacity: 1 !important;

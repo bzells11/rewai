@@ -134,7 +134,7 @@ export default function Layout() {
               <span className="text-bg font-bold text-sm leading-none">{userInitial}</span>
             </div>
             <div className="min-w-0">
-              <p className="text-sm font-medium text-text-primary truncate leading-tight">{userName}</p>
+              <p className="sidebar-username text-sm font-medium text-text-primary truncate leading-tight">{userName}</p>
               <p className="text-[11px] text-muted">Starter plan</p>
             </div>
           </div>
