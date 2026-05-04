@@ -152,10 +152,10 @@ html.dark .status-dead       { background: rgba(100,116,139,0.10); color: #47556
   background: rgba(255,255,255,0.15);
 }
 html:not(.dark) .feature-cell:not(:nth-child(3n))::after {
-  background: rgba(0,0,0,0.12);
+  background: rgba(0,0,0,0.08);
 }
 html:not(.dark) .feature-cell:nth-child(-n+3)::before {
-  background: rgba(0,0,0,0.12);
+  background: rgba(0,0,0,0.08);
 }
 
 /* ─── Light-mode text visibility ─────────────────────── */
