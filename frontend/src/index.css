@@ -134,6 +134,21 @@ html.dark .status-dead       { background: rgba(100,116,139,0.10); color: #47556
 }
 
 /* ─── Light-mode dashboard overrides ─────────────────── */
+html:not(.dark) .stat-card-value {
+  color: #111827 !important;
+  font-weight: 600 !important;
+  font-size: 28px !important;
+  opacity: 1 !important;
+}
+html:not(.dark) .stat-card-label {
+  color: #6b7280 !important;
+  font-size: 12px !important;
+  opacity: 1 !important;
+}
+html:not(.dark) .lead-card-name {
+  color: #111827 !important;
+  opacity: 1 !important;
+}
 html:not(.dark) .kanban-col-label {
   color: #374151 !important;
   font-weight: 500;

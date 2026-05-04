@@ -222,12 +222,12 @@ export default function Dashboard() {
               const display = key === 'response' && raw ? `${raw}%` : raw;
               return (
                 <div key={key} className="rounded-xl px-5 py-4 glass">
-                  <div className="flex items-center gap-1.5 text-muted text-xs mb-2">
+                  <div className="stat-card-label flex items-center gap-1.5 text-muted text-xs mb-2">
                     <Icon size={12} />
                     {label}
                   </div>
                   {display != null
-                    ? <p className="font-display font-bold text-2xl text-text-primary">{display}</p>
+                    ? <p className="stat-card-value font-display font-bold text-2xl text-text-primary">{display}</p>
                     : <p className="text-xs text-muted/70 pt-0.5">No campaigns yet</p>
                   }
                 </div>

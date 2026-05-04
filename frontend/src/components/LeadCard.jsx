@@ -45,7 +45,7 @@ export default function LeadCard({ lead, isDragging, compact }) {
     >
       {/* Name + status badge */}
       <div className="flex items-start justify-between gap-2 mb-1.5">
-        <p className="font-display font-semibold text-text-primary text-sm leading-snug">
+        <p className="lead-card-name font-display font-semibold text-text-primary text-sm leading-snug">
           {lead.name}
         </p>
         <span className={`text-[10px] font-medium px-2 py-0.5 rounded-full shrink-0 status-${lead.status}`}>
