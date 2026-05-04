@@ -9,9 +9,7 @@ import { supabase, apiFetch } from '../lib/supabase';
 
 function SoonBadge({ dim }) {
   return (
-    <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full leading-none ${
-      dim ? 'bg-white/5 text-muted' : 'bg-amber-500/20 text-amber-400'
-    }`}>
+    <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full leading-none bg-amber-500/20 text-amber-400">
       Soon
     </span>
   );
