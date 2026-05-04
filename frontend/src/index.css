@@ -133,14 +133,6 @@ html.dark .status-dead       { background: rgba(100,116,139,0.10); color: #47556
   .font-display { font-family: 'Space Grotesk', sans-serif; }
 }
 
-/* ─── Light-mode landing page feature grid ───────────── */
-html:not(.dark) .feature-cell {
-  border-color: #e5e7eb !important;
-}
-html:not(.dark) #features .grid {
-  border-color: #e5e7eb !important;
-}
-
 /* ─── Light-mode text visibility ─────────────────────── */
 html:not(.dark) .glass h1,
 html:not(.dark) .glass h2,
