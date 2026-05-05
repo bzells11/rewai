@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiFetch } from '../lib/supabase';
-import { RotateCcw, Trash2, Archive, X, AlertTriangle } from 'lucide-react';
+import { RotateCcw, Trash2, Archive, AlertTriangle, Search } from 'lucide-react';
 
 function ConfirmModal({ lead, onConfirm, onCancel }) {
   return (
@@ -41,6 +41,7 @@ function ConfirmModal({ lead, onConfirm, onCancel }) {
 export default function ArchivePage() {
   const queryClient = useQueryClient();
   const [confirmLead, setConfirmLead] = useState(null);
+  const [search, setSearch] = useState('');
 
   const { data: leads = [], isLoading } = useQuery({
     queryKey: ['leads-archived'],
@@ -78,7 +79,7 @@ export default function ArchivePage() {
         />
       )}
 
-      <div className="flex items-center gap-3 mb-8">
+      <div className="flex items-center gap-3 mb-5">
         <Archive size={20} className="text-muted" />
         <h1 className="font-display font-bold text-2xl text-text-primary">Archive</h1>
         {leads.length > 0 && (
@@ -86,6 +87,18 @@ export default function ArchivePage() {
             {leads.length}
           </span>
         )}
+      </div>
+
+      {/* Search */}
+      <div className="relative mb-6">
+        <Search size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted pointer-events-none" />
+        <input
+          type="text"
+          value={search}
+          onChange={e => setSearch(e.target.value)}
+          placeholder="Search archived leads..."
+          className="w-full bg-dim/5 border border-border rounded-xl pl-9 pr-4 py-2.5 text-sm text-text-primary placeholder:text-muted focus:outline-none focus:border-accent/50 transition-colors"
+        />
       </div>
 
       {isLoading ? (
@@ -100,7 +113,12 @@ export default function ArchivePage() {
         </div>
       ) : (
         <div className="space-y-2">
-          {leads.map(lead => (
+          {leads
+            .filter(l => {
+              const q = search.toLowerCase();
+              return !q || l.name?.toLowerCase().includes(q) || l.phone?.includes(q) || l.address?.toLowerCase().includes(q);
+            })
+            .map(lead => (
             <div
               key={lead.id}
               className="glass rounded-2xl px-5 py-4 flex items-center justify-between gap-4"
@@ -132,6 +150,7 @@ export default function ArchivePage() {
             </div>
           ))}
         </div>
+
       )}
 
       <p className="text-xs text-muted mt-6 text-center">

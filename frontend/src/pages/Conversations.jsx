@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { apiFetch, supabase } from '../lib/supabase';
 import ConversationThread from '../components/ConversationThread';
-import { Bot, User } from 'lucide-react';
+import { Bot, User, Search } from 'lucide-react';
 
 const STATUS_COLORS = {
   cold:       'text-muted',
@@ -54,6 +54,7 @@ export default function Conversations() {
   const [selectedId, setSelectedId] = useState(null);
   const [activeFilter, setActiveFilter] = useState('all');
   const [localAiEnabled, setLocalAiEnabled] = useState(null);
+  const [search, setSearch] = useState('');
 
   const { data: leads = [], isLoading } = useQuery({
     queryKey: ['leads'],
@@ -91,8 +92,10 @@ export default function Conversations() {
     return () => supabase.removeChannel(channel);
   }, [queryClient]);
 
+  const q = search.toLowerCase();
   const sorted = [...leads]
     .filter(l => activeFilter === 'all' || l.status === activeFilter)
+    .filter(l => !q || l.name?.toLowerCase().includes(q) || l.phone?.includes(q) || l.address?.toLowerCase().includes(q))
     .sort((a, b) => {
       if (!a.last_contact_at && !b.last_contact_at) return 0;
       if (!a.last_contact_at) return 1;
@@ -151,6 +154,18 @@ export default function Conversations() {
           <div className="flex items-center justify-between mb-4">
             <h1 className="font-display font-bold text-xl text-text-primary">Conversations</h1>
             <span className="text-xs text-muted bg-dim/5 px-2 py-0.5 rounded-full">{sorted.length}</span>
+          </div>
+
+          {/* Search */}
+          <div className="relative mb-3">
+            <Search size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted pointer-events-none" />
+            <input
+              type="text"
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+              placeholder="Search leads..."
+              className="w-full bg-dim/5 border border-border rounded-lg pl-8 pr-3 py-2 text-xs text-text-primary placeholder:text-muted focus:outline-none focus:border-accent/50 transition-colors"
+            />
           </div>
 
           {/* Filter tabs */}
