@@ -10,7 +10,7 @@ router.use(requireAuth);
 router.get('/me', async (req, res) => {
   let { data, error } = await supabaseAdmin
     .from('users')
-    .select('id, email, name, company_name, buying_area, twilio_number, plan, handoff_retention_days, created_at')
+    .select('id, email, name, company_name, buying_area, twilio_number, twilio_sid, twilio_auth_token, plan, handoff_retention_days, created_at')
     .eq('id', req.userId)
     .single();
 
@@ -27,7 +27,7 @@ router.get('/me', async (req, res) => {
   }
 
   if (error) return res.status(500).json({ error: error.message });
-  res.json(data);
+  res.json({ ...data, has_twilio_token: !!data.twilio_auth_token, twilio_auth_token: undefined });
 });
 
 // PATCH /users/me

@@ -59,7 +59,7 @@ export default function Settings() {
       company_name: user.company_name || '',
       buying_area: user.buying_area || '',
       twilio_number: user.twilio_number || '',
-      twilio_sid: '',
+      twilio_sid: user.twilio_sid || '',
       twilio_auth_token: '',
       handoff_retention_days: user.handoff_retention_days ?? 30,
     });
@@ -146,7 +146,7 @@ export default function Settings() {
             {[
               { key: 'twilio_number',     label: 'Twilio Phone Number', placeholder: '+16145550000',                      type: 'text',     mono: false },
               { key: 'twilio_sid',        label: 'Account SID',         placeholder: 'ACxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx', type: 'text',     mono: true  },
-              { key: 'twilio_auth_token', label: 'Auth Token',          placeholder: '••••••••••••••••',                  type: 'password', mono: true  },
+              { key: 'twilio_auth_token', label: 'Auth Token',          placeholder: user?.has_twilio_token ? 'Saved — enter new value to change' : '••••••••••••••••', type: 'password', mono: true  },
             ].map(({ key, label, placeholder, type, mono }) => (
               <div key={key}>
                 <label className="text-xs text-text-secondary block mb-1.5">{label}</label>
