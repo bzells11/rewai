@@ -182,9 +182,10 @@ export default function Dashboard() {
     onMutate: async ({ id, position }) => {
       await queryClient.cancelQueries({ queryKey: ['leads'] });
       const prev = queryClient.getQueryData(['leads']);
-      queryClient.setQueryData(['leads'], old =>
-        old.map(l => l.id === id ? { ...l, position } : l)
-      );
+      queryClient.setQueryData(['leads'], old => {
+        const updated = old.map(l => l.id === id ? { ...l, position } : l);
+        return [...updated].sort((a, b) => (a.position ?? 0) - (b.position ?? 0));
+      });
       return { prev };
     },
     onError: (_err, _vars, ctx) => queryClient.setQueryData(['leads'], ctx.prev),
