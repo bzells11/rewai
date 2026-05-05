@@ -34,7 +34,8 @@ export default function Layout() {
     staleTime: 60_000,
   });
 
-  const userName = profile?.name || user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'User';
+  const fullName = profile?.name || user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'User';
+  const userName = fullName.split(' ')[0];
   const userInitial = userName[0]?.toUpperCase() ?? '?';
 
   const linkClass = ({ isActive }) =>
