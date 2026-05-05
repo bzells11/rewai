@@ -161,24 +161,6 @@ export default function Settings() {
           />
         </section>
 
-        {/* Lead Retention */}
-        <section className="glass rounded-2xl p-6">
-          <h2 className="font-display font-semibold text-text-primary mb-1">Lead Retention</h2>
-          <p className="text-xs text-muted mb-5">Handed Off leads are automatically archived after this many days of inactivity.</p>
-          <div className="flex items-center gap-4">
-            <input
-              type="number"
-              min={1}
-              max={365}
-              value={profile.handoff_retention_days}
-              onChange={e => setProfile(p => ({ ...p, handoff_retention_days: Number(e.target.value) }))}
-              className={`${inputClass} w-28`}
-            />
-            <span className="text-sm text-text-secondary">days</span>
-          </div>
-          <p className="text-xs text-muted mt-3">Archived leads can be restored or permanently deleted from the Archive page.</p>
-        </section>
-
       </form>
 
       {/* Sticky save button — bottom right */}
