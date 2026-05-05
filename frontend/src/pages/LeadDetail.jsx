@@ -42,10 +42,16 @@ export default function LeadDetail() {
   async function saveEdit() {
     setSaving(true);
     try {
-      await apiFetch(`/leads/${id}`, { method: 'PATCH', body: JSON.stringify(editForm) });
+      const payload = { ...editForm };
+      if (payload.asking_price !== '') payload.asking_price = Number(payload.asking_price);
+      else delete payload.asking_price;
+      Object.keys(payload).forEach(k => payload[k] === '' && delete payload[k]);
+      await apiFetch(`/leads/${id}`, { method: 'PATCH', body: JSON.stringify(payload) });
       queryClient.invalidateQueries({ queryKey: ['lead', id] });
       queryClient.invalidateQueries({ queryKey: ['leads'] });
       setEditing(false);
+    } catch (err) {
+      alert('Save failed: ' + err.message);
     } finally {
       setSaving(false);
     }
@@ -161,9 +167,11 @@ export default function LeadDetail() {
         {/* Lead details */}
         <div className="p-6 space-y-4 text-sm">
           {lead.ai_notes && (
-            <div>
-              <p className="text-xs text-muted mb-1">AI Summary</p>
-              <p className="text-text-secondary leading-relaxed">{lead.ai_notes}</p>
+            <div className="rounded-xl bg-accent/8 border border-accent/20 px-3 py-2.5">
+              <p className="flex items-center gap-1.5 text-[10px] text-accent font-semibold mb-1.5">
+                <Bot size={11} /> AI Notes
+              </p>
+              <p className="text-xs text-accent/80 leading-relaxed">{lead.ai_notes}</p>
             </div>
           )}
           <div>
