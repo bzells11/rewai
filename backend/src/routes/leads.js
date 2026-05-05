@@ -146,7 +146,7 @@ router.post('/bulk', async (req, res) => {
 
 // PATCH /leads/:id — update status, ai_enabled, or notes
 router.patch('/:id', async (req, res) => {
-  const allowed = ['status', 'ai_enabled', 'ai_notes', 'situation', 'asking_price', 'timeline'];
+  const allowed = ['status', 'ai_enabled', 'ai_notes', 'situation', 'asking_price', 'timeline', 'name', 'address', 'phone'];
   const updates = Object.fromEntries(
     Object.entries(req.body).filter(([k]) => allowed.includes(k))
   );

@@ -1,8 +1,9 @@
+import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { apiFetch } from '../lib/supabase';
 import ConversationThread from '../components/ConversationThread';
-import { ArrowLeft, Bot, User, Calendar, DollarSign, Clock, MapPin } from 'lucide-react';
+import { ArrowLeft, Bot, User, Calendar, DollarSign, Clock, MapPin, Pencil, Check, X } from 'lucide-react';
 
 const STATUS_LABELS = {
   cold: 'Cold', active: 'Active', warm: 'Warm',
@@ -16,11 +17,39 @@ export default function LeadDetail() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
 
+  const [editing, setEditing] = useState(false);
+  const [editForm, setEditForm] = useState({});
+  const [saving, setSaving] = useState(false);
+
   const { data: lead, isLoading } = useQuery({
     queryKey: ['lead', id],
     queryFn: () => apiFetch(`/leads/${id}`),
     refetchInterval: 15_000,
   });
+
+  function startEdit() {
+    setEditForm({
+      name: lead.name || '',
+      address: lead.address || '',
+      phone: lead.phone || '',
+      asking_price: lead.asking_price || '',
+      situation: lead.situation || '',
+      timeline: lead.timeline || '',
+    });
+    setEditing(true);
+  }
+
+  async function saveEdit() {
+    setSaving(true);
+    try {
+      await apiFetch(`/leads/${id}`, { method: 'PATCH', body: JSON.stringify(editForm) });
+      queryClient.invalidateQueries({ queryKey: ['lead', id] });
+      queryClient.invalidateQueries({ queryKey: ['leads'] });
+      setEditing(false);
+    } finally {
+      setSaving(false);
+    }
+  }
 
   async function toggleAI() {
     await apiFetch(`/leads/${id}`, {
@@ -62,8 +91,40 @@ export default function LeadDetail() {
             <ArrowLeft size={14} /> Back to Pipeline
           </button>
 
-          <h2 className="font-display font-bold text-lg text-text-primary">{lead.name}</h2>
-          {lead.address && (
+          <div className="flex items-start justify-between gap-2">
+            {editing ? (
+              <input
+                autoFocus
+                value={editForm.name}
+                onChange={e => setEditForm(f => ({ ...f, name: e.target.value }))}
+                className="flex-1 font-display font-bold text-lg bg-dim/5 border border-border rounded-lg px-2 py-1 focus:outline-none focus:border-accent/50"
+              />
+            ) : (
+              <h2 className="font-display font-bold text-lg text-text-primary">{lead.name}</h2>
+            )}
+            {!editing ? (
+              <button onClick={startEdit} className="text-muted hover:text-text-primary transition-colors shrink-0 mt-1">
+                <Pencil size={13} />
+              </button>
+            ) : (
+              <div className="flex gap-1.5 shrink-0 mt-1">
+                <button onClick={saveEdit} disabled={saving} className="text-accent hover:text-accent/80 transition-colors">
+                  <Check size={15} />
+                </button>
+                <button onClick={() => setEditing(false)} className="text-muted hover:text-text-primary transition-colors">
+                  <X size={15} />
+                </button>
+              </div>
+            )}
+          </div>
+          {editing ? (
+            <input
+              value={editForm.address}
+              onChange={e => setEditForm(f => ({ ...f, address: e.target.value }))}
+              placeholder="Address"
+              className="w-full mt-1 text-xs bg-dim/5 border border-border rounded-lg px-2 py-1 focus:outline-none focus:border-accent/50"
+            />
+          ) : lead.address && (
             <p className="flex items-center gap-1.5 text-xs text-muted mt-1">
               <MapPin size={12} /> {lead.address}
             </p>
@@ -105,24 +166,44 @@ export default function LeadDetail() {
               <p className="text-text-secondary leading-relaxed">{lead.ai_notes}</p>
             </div>
           )}
-          {lead.situation && (
-            <div>
-              <p className="text-xs text-muted mb-1">Situation</p>
-              <p className="text-text-secondary">{lead.situation}</p>
-            </div>
-          )}
-          {lead.timeline && (
-            <div className="flex items-center gap-2 text-text-secondary">
-              <Calendar size={13} className="text-muted" />
-              <span>Timeline: {lead.timeline}</span>
-            </div>
-          )}
-          {lead.asking_price && (
-            <div className="flex items-center gap-2 text-text-secondary">
-              <DollarSign size={13} className="text-muted" />
-              <span>Asking: ${lead.asking_price.toLocaleString()}</span>
-            </div>
-          )}
+          <div>
+            <p className="text-xs text-muted mb-1">Situation</p>
+            {editing ? (
+              <input value={editForm.situation} onChange={e => setEditForm(f => ({ ...f, situation: e.target.value }))} placeholder="e.g. Behind on mortgage" className="w-full bg-dim/5 border border-border rounded-lg px-2 py-1 text-xs focus:outline-none focus:border-accent/50" />
+            ) : (
+              <p className="text-text-secondary">{lead.situation || <span className="text-muted italic">None</span>}</p>
+            )}
+          </div>
+          <div>
+            <p className="text-xs text-muted mb-1">Asking Price</p>
+            {editing ? (
+              <input type="number" value={editForm.asking_price} onChange={e => setEditForm(f => ({ ...f, asking_price: e.target.value }))} placeholder="e.g. 150000" className="w-full bg-dim/5 border border-border rounded-lg px-2 py-1 text-xs focus:outline-none focus:border-accent/50" />
+            ) : (
+              <div className="flex items-center gap-2 text-text-secondary">
+                <DollarSign size={13} className="text-muted" />
+                <span>{lead.asking_price ? `$${lead.asking_price.toLocaleString()}` : <span className="text-muted italic">None</span>}</span>
+              </div>
+            )}
+          </div>
+          <div>
+            <p className="text-xs text-muted mb-1">Timeline</p>
+            {editing ? (
+              <input value={editForm.timeline} onChange={e => setEditForm(f => ({ ...f, timeline: e.target.value }))} placeholder="e.g. 30 days" className="w-full bg-dim/5 border border-border rounded-lg px-2 py-1 text-xs focus:outline-none focus:border-accent/50" />
+            ) : (
+              <div className="flex items-center gap-2 text-text-secondary">
+                <Calendar size={13} className="text-muted" />
+                <span>{lead.timeline || <span className="text-muted italic">None</span>}</span>
+              </div>
+            )}
+          </div>
+          <div>
+            <p className="text-xs text-muted mb-1">Phone</p>
+            {editing ? (
+              <input value={editForm.phone} onChange={e => setEditForm(f => ({ ...f, phone: e.target.value }))} placeholder="+16145551234" className="w-full bg-dim/5 border border-border rounded-lg px-2 py-1 text-xs focus:outline-none focus:border-accent/50" />
+            ) : (
+              <p className="text-text-secondary">{lead.phone}</p>
+            )}
+          </div>
           {lead.last_contact_at && (
             <div className="flex items-center gap-2 text-text-secondary">
               <Clock size={13} className="text-muted" />
