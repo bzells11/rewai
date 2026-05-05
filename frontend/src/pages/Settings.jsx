@@ -80,8 +80,7 @@ export default function Settings() {
       const updates = { ...profile };
       if (!updates.twilio_sid) delete updates.twilio_sid;
       if (!updates.twilio_auth_token) delete updates.twilio_auth_token;
-      alert(`Sending: SID=${updates.twilio_sid?.slice(0,6) || 'MISSING'} Token=${updates.twilio_auth_token ? updates.twilio_auth_token.slice(0,4)+'...' : 'MISSING'}`);
-      await apiFetch('/users/me', { method: 'PATCH', body: JSON.stringify(updates) });
+await apiFetch('/users/me', { method: 'PATCH', body: JSON.stringify(updates) });
       if (campaign.intro_template && !campaigns[0]) {
         await apiFetch('/users/me/campaigns', { method: 'POST', body: JSON.stringify(campaign) });
       }
