@@ -7,6 +7,7 @@ import {
   useSensor,
   useSensors,
   closestCenter,
+  pointerWithin,
   useDroppable,
 } from '@dnd-kit/core';
 import { SortableContext, verticalListSortingStrategy, arrayMove } from '@dnd-kit/sortable';
@@ -14,6 +15,12 @@ import { useNavigate } from 'react-router-dom';
 import { apiFetch } from '../lib/supabase';
 import LeadCard from '../components/LeadCard';
 import { Flame, TrendingUp, Users, Activity, Trash2, Rows2, Plus } from 'lucide-react';
+
+function collisionDetection(args) {
+  const pointer = pointerWithin(args);
+  if (pointer.length > 0) return pointer;
+  return closestCenter(args);
+}
 
 const COLUMNS = [
   { key: 'cold',       label: 'Cold',       color: '#64748b' },
@@ -226,7 +233,7 @@ export default function Dashboard() {
   return (
     <DndContext
       sensors={sensors}
-      collisionDetection={closestCenter}
+      collisionDetection={collisionDetection}
       onDragStart={handleDragStart}
       onDragEnd={handleDragEnd}
     >
