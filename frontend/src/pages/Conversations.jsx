@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { apiFetch } from '../lib/supabase';
+import { apiFetch, supabase } from '../lib/supabase';
 import ConversationThread from '../components/ConversationThread';
 import { Bot, User } from 'lucide-react';
 
@@ -67,6 +67,29 @@ export default function Conversations() {
     enabled: !!selectedId,
     refetchInterval: 3_000,
   });
+
+  // Real-time: new messages for the open conversation
+  useEffect(() => {
+    if (!selectedId) return;
+    const channel = supabase
+      .channel(`conversations:${selectedId}`)
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'conversations', filter: `lead_id=eq.${selectedId}` },
+        () => queryClient.invalidateQueries({ queryKey: ['lead', selectedId] })
+      )
+      .subscribe();
+    return () => supabase.removeChannel(channel);
+  }, [selectedId, queryClient]);
+
+  // Real-time: lead list sidebar updates
+  useEffect(() => {
+    const channel = supabase
+      .channel('leads-live')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'leads' },
+        () => queryClient.invalidateQueries({ queryKey: ['leads'] })
+      )
+      .subscribe();
+    return () => supabase.removeChannel(channel);
+  }, [queryClient]);
 
   const sorted = [...leads]
     .filter(l => activeFilter === 'all' || l.status === activeFilter)
