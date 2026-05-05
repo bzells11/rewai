@@ -77,9 +77,7 @@ export default function Settings() {
       const updates = { ...profile };
       if (!updates.twilio_sid) delete updates.twilio_sid;
       if (!updates.twilio_auth_token) delete updates.twilio_auth_token;
-      console.log('PATCH body:', JSON.stringify(updates));
       await apiFetch('/users/me', { method: 'PATCH', body: JSON.stringify(updates) });
-      console.log('PATCH success');
       if (campaign.intro_template && !campaigns[0]) {
         await apiFetch('/users/me/campaigns', { method: 'POST', body: JSON.stringify(campaign) });
       }

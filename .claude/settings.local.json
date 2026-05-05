@@ -34,7 +34,9 @@
       "Bash(git commit -m *)",
       "Bash(git diff *)",
       "Skill(update-config)",
-      "Bash(curl *)"
+      "Bash(curl *)",
+      "Bash(lsof -ti:3001)",
+      "Read(//private/tmp/**)"
     ]
   }
 }
