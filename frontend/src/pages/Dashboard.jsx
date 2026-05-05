@@ -117,13 +117,13 @@ export default function Dashboard() {
   const { data: leads = [], isLoading } = useQuery({
     queryKey: ['leads'],
     queryFn: () => apiFetch('/leads'),
-    refetchInterval: 30_000,
+    refetchInterval: 10_000,
   });
 
   const { data: stats } = useQuery({
     queryKey: ['stats'],
     queryFn: () => apiFetch('/users/me/stats'),
-    refetchInterval: 60_000,
+    refetchInterval: 30_000,
   });
 
   const liveStats = {

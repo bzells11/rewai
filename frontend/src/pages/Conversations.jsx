@@ -58,14 +58,14 @@ export default function Conversations() {
   const { data: leads = [], isLoading } = useQuery({
     queryKey: ['leads'],
     queryFn: () => apiFetch('/leads'),
-    refetchInterval: 30_000,
+    refetchInterval: 5_000,
   });
 
   const { data: selectedLead } = useQuery({
     queryKey: ['lead', selectedId],
     queryFn: () => apiFetch(`/leads/${selectedId}`),
     enabled: !!selectedId,
-    refetchInterval: 15_000,
+    refetchInterval: 3_000,
   });
 
   const sorted = [...leads]
