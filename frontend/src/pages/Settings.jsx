@@ -179,14 +179,20 @@ export default function Settings() {
           <p className="text-xs text-muted mt-3">Archived leads can be restored or permanently deleted from the Archive page.</p>
         </section>
 
-        <button
-          type="submit"
-          disabled={saving}
-          className="w-full bg-accent text-bg font-semibold py-3 rounded-xl text-sm hover:bg-accent/90 disabled:opacity-50 transition-all flex items-center justify-center gap-2"
-        >
-          {saved ? <><CheckCircle size={16} /> Saved!</> : saving ? 'Saving...' : <><Save size={16} /> Save Settings</>}
-        </button>
       </form>
+
+      {/* Sticky save button — bottom right */}
+      <button
+        onClick={saveProfile}
+        disabled={saving}
+        className={`fixed bottom-6 right-6 z-50 flex items-center gap-2 px-5 py-3 rounded-2xl text-sm font-semibold shadow-lg transition-all duration-200 disabled:opacity-50
+          ${saved
+            ? 'bg-green-500 text-white scale-105'
+            : 'bg-accent text-white hover:bg-accent/90 hover:scale-105'
+          }`}
+      >
+        {saved ? <><CheckCircle size={16} /> Saved!</> : saving ? 'Saving...' : <><Save size={16} /> Save Settings</>}
+      </button>
 
       {/* Plan & Billing */}
       <section className="glass rounded-2xl p-6 mt-8">
