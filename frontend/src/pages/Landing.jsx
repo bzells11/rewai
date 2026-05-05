@@ -182,11 +182,11 @@ export default function Landing() {
           {/* Left */}
           <div>
             <h1 className="fade-up-1 font-display font-bold text-5xl lg:text-[3.75rem] leading-[1.06] tracking-tight mb-6">
-              Your AI that texts{' '}
+              Your AI that follows up with{' '}
               <span style={{ background: 'linear-gradient(135deg, #94a3b8, #e2e8f0)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
                 motivated sellers
               </span>{' '}
-              while you sleep
+              so you never miss a deal
             </h1>
 
             <p className="fade-up-2 text-lg text-text-secondary leading-relaxed mb-10 max-w-lg">
