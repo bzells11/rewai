@@ -27,7 +27,7 @@ router.get('/me', async (req, res) => {
   }
 
   if (error) return res.status(500).json({ error: error.message });
-  res.json({ ...data, has_twilio_token: !!data.twilio_auth_token, twilio_auth_token: undefined });
+  res.json({ ...data, has_twilio_token: !!data.twilio_auth_token });
 });
 
 // PATCH /users/me

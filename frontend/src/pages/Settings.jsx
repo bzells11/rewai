@@ -61,7 +61,7 @@ export default function Settings() {
       buying_area:            prev.buying_area || user.buying_area || '',
       twilio_number:          prev.twilio_number || user.twilio_number || '',
       twilio_sid:             prev.twilio_sid || user.twilio_sid || '',
-      twilio_auth_token:      prev.twilio_auth_token || '',
+      twilio_auth_token:      prev.twilio_auth_token || user.twilio_auth_token || '',
       handoff_retention_days: prev.handoff_retention_days || user.handoff_retention_days || 30,
     }));
   }, [user]);
