@@ -11,6 +11,7 @@ import Integrations from './pages/Integrations';
 import LeadDetail from './pages/LeadDetail';
 import Import from './pages/Import';
 import Settings from './pages/Settings';
+import Archive from './pages/Archive';
 
 export default function App() {
   const [session, setSession] = useState(undefined); // undefined = loading
@@ -42,6 +43,7 @@ export default function App() {
           <Route path="/leads/:id" element={<LeadDetail />} />
           <Route path="/import" element={<Import />} />
           <Route path="/settings" element={<Settings />} />
+          <Route path="/archive" element={<Archive />} />
         </Route>
         <Route path="*" element={<Navigate to={session ? '/dashboard' : '/'} replace />} />
       </Routes>

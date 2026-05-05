@@ -8,41 +8,30 @@ const router = express.Router();
 
 router.use(requireAuth);
 
-// GET /leads — list all leads for the current user (excludes soft-deleted)
+// GET /leads — list active leads (excludes archived)
 router.get('/', async (req, res) => {
   const { status, limit = 200 } = req.query;
-
-  const buildQuery = (filterDeleted) => {
-    let q = supabaseAdmin
-      .from('leads')
-      .select('id, name, phone, address, status, situation, asking_price, timeline, ai_notes, ai_enabled, imported_at, last_contact_at, position')
-      .eq('user_id', req.userId)
-      .order('position', { ascending: true })
-      .limit(Number(limit));
-    if (filterDeleted) q = q.is('deleted_at', null);
-    if (status) q = q.eq('status', status);
-    return q;
-  };
-
-  let { data, error } = await buildQuery(true);
-
-  // If deleted_at column doesn't exist yet, fall back without the filter
-  if (error?.code === '42703') {
-    ({ data, error } = await buildQuery(false));
-  }
-
+  let q = supabaseAdmin
+    .from('leads')
+    .select('id, name, phone, address, status, situation, asking_price, timeline, ai_notes, ai_enabled, imported_at, last_contact_at, position')
+    .eq('user_id', req.userId)
+    .or('archived.is.null,archived.eq.false')
+    .order('position', { ascending: true })
+    .limit(Number(limit));
+  if (status) q = q.eq('status', status);
+  const { data, error } = await q;
   if (error) return res.status(500).json({ error: error.message });
   res.json(data);
 });
 
-// GET /leads/deleted — soft-deleted leads recoverable within 30 days
-router.get('/deleted', async (req, res) => {
+// GET /leads/archived — all archived leads
+router.get('/archived', async (req, res) => {
   const { data, error } = await supabaseAdmin
     .from('leads')
-    .select('id, name, phone, address, status, deleted_at, last_contact_at')
+    .select('id, name, phone, address, status, archived_at, last_contact_at')
     .eq('user_id', req.userId)
-    .not('deleted_at', 'is', null)
-    .order('deleted_at', { ascending: false });
+    .eq('archived', true)
+    .order('archived_at', { ascending: false });
   if (error) return res.status(500).json({ error: error.message });
   res.json(data);
 });
@@ -176,28 +165,39 @@ router.patch('/:id', async (req, res) => {
   res.json(data);
 });
 
-// DELETE /leads/:id — soft delete (moves to Recently Deleted)
+// DELETE /leads/:id — archive a lead (soft-delete)
 router.delete('/:id', async (req, res) => {
   const { error } = await supabaseAdmin
     .from('leads')
-    .update({ deleted_at: new Date().toISOString() })
+    .update({ archived: true, archived_at: new Date().toISOString() })
     .eq('id', req.params.id)
     .eq('user_id', req.userId);
   if (error) return res.status(500).json({ error: error.message });
   res.status(204).end();
 });
 
-// POST /leads/:id/restore — recover a soft-deleted lead
+// POST /leads/:id/restore — restore an archived lead
 router.post('/:id/restore', async (req, res) => {
   const { data, error } = await supabaseAdmin
     .from('leads')
-    .update({ deleted_at: null })
+    .update({ archived: false, archived_at: null })
     .eq('id', req.params.id)
     .eq('user_id', req.userId)
     .select()
     .single();
   if (error) return res.status(500).json({ error: error.message });
   res.json(data);
+});
+
+// DELETE /leads/:id/permanent — permanently delete a lead
+router.delete('/:id/permanent', async (req, res) => {
+  const { error } = await supabaseAdmin
+    .from('leads')
+    .delete()
+    .eq('id', req.params.id)
+    .eq('user_id', req.userId);
+  if (error) return res.status(500).json({ error: error.message });
+  res.status(204).end();
 });
 
 // POST /leads/:id/message — wholesaler manually sends a message

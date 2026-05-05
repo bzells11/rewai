@@ -3,7 +3,7 @@ import { Outlet, NavLink } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import {
   BarChart2, Mail, MessageSquare, TrendingUp, Users, ScanLine,
-  Plug, Settings,
+  Plug, Settings, Archive,
 } from 'lucide-react';
 import { supabase, apiFetch } from '../lib/supabase';
 
@@ -82,6 +82,10 @@ export default function Layout() {
               <NavLink to="/conversations" className={linkClass}>
                 <MessageSquare size={16} />
                 <span className="flex-1">Conversations</span>
+              </NavLink>
+              <NavLink to="/archive" className={linkClass}>
+                <Archive size={16} />
+                <span className="flex-1">Archive</span>
               </NavLink>
             </div>
           </div>

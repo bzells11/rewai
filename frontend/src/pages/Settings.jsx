@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { apiFetch, supabase } from '../lib/supabase';
-import { Save, CheckCircle, MessageSquare, LogOut, Sun, Moon, Check, ExternalLink, RotateCcw, Trash2 } from 'lucide-react';
+import { Save, CheckCircle, MessageSquare, LogOut, Sun, Moon, Check, ExternalLink } from 'lucide-react';
 import { useTheme } from '../lib/ThemeContext';
 
 export default function Settings() {
@@ -42,13 +42,8 @@ export default function Settings() {
 
   const { data: user } = useQuery({ queryKey: ['me'], queryFn: () => apiFetch('/users/me'), staleTime: 0 });
   const { data: campaigns = [] } = useQuery({ queryKey: ['campaigns'], queryFn: () => apiFetch('/users/me/campaigns') });
-  const { data: deletedLeads = [], refetch: refetchDeleted } = useQuery({
-    queryKey: ['leads-deleted'],
-    queryFn: () => apiFetch('/leads/deleted'),
-  });
 
   const [profile, setProfile] = useState({ name: '', company_name: '', buying_area: '', twilio_number: '', twilio_sid: '', twilio_auth_token: '', handoff_retention_days: 30 });
-  const [restoring, setRestoring] = useState(null);
   const [campaign, setCampaign] = useState({ name: 'Default', intro_template: '' });
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
@@ -92,21 +87,6 @@ export default function Settings() {
     }
   }
 
-  async function restoreLead(id) {
-    setRestoring(id);
-    try {
-      await apiFetch(`/leads/${id}/restore`, { method: 'POST' });
-      queryClient.invalidateQueries({ queryKey: ['leads'] });
-      refetchDeleted();
-    } finally {
-      setRestoring(null);
-    }
-  }
-
-  function daysUntilGone(deletedAt) {
-    const gone = new Date(deletedAt).getTime() + 30 * 24 * 60 * 60 * 1000;
-    return Math.max(0, Math.ceil((gone - Date.now()) / (24 * 60 * 60 * 1000)));
-  }
 
   const inputClass = 'w-full bg-dim/5 border border-border rounded-xl px-4 py-2.5 text-sm text-text-primary placeholder:text-muted focus:outline-none focus:border-accent/50 transition-colors';
 
@@ -184,7 +164,7 @@ export default function Settings() {
         {/* Lead Retention */}
         <section className="glass rounded-2xl p-6">
           <h2 className="font-display font-semibold text-text-primary mb-1">Lead Retention</h2>
-          <p className="text-xs text-muted mb-5">Handed Off leads are automatically moved to Recently Deleted after this many days of inactivity.</p>
+          <p className="text-xs text-muted mb-5">Handed Off leads are automatically archived after this many days of inactivity.</p>
           <div className="flex items-center gap-4">
             <input
               type="number"
@@ -196,7 +176,7 @@ export default function Settings() {
             />
             <span className="text-sm text-text-secondary">days</span>
           </div>
-          <p className="text-xs text-muted mt-3">Leads in Recently Deleted are permanently removed after 30 days.</p>
+          <p className="text-xs text-muted mt-3">Archived leads can be restored or permanently deleted from the Archive page.</p>
         </section>
 
         <button
@@ -282,44 +262,6 @@ export default function Settings() {
         )}
       </section>
 
-      {/* Recently Deleted */}
-      <section className="glass rounded-2xl p-6 mt-8">
-        <div className="flex items-center justify-between mb-5">
-          <div>
-            <h2 className="font-display font-semibold text-text-primary">Recently Deleted</h2>
-            <p className="text-xs text-muted mt-0.5">Leads here are permanently removed after 30 days.</p>
-          </div>
-          {deletedLeads.length > 0 && (
-            <span className="text-xs text-muted bg-dim/5 px-2 py-0.5 rounded-full">{deletedLeads.length}</span>
-          )}
-        </div>
-
-        {deletedLeads.length === 0 ? (
-          <p className="text-sm text-muted text-center py-6">No recently deleted leads</p>
-        ) : (
-          <div className="space-y-2">
-            {deletedLeads.map(lead => (
-              <div key={lead.id} className="flex items-center justify-between gap-3 px-4 py-3 rounded-xl bg-dim/3 border border-border">
-                <div className="min-w-0">
-                  <p className="text-sm font-medium text-text-primary truncate">{lead.name}</p>
-                  {lead.address && <p className="text-xs text-muted truncate">{lead.address}</p>}
-                </div>
-                <div className="flex items-center gap-3 shrink-0">
-                  <span className="text-xs text-muted">{daysUntilGone(lead.deleted_at)}d left</span>
-                  <button
-                    onClick={() => restoreLead(lead.id)}
-                    disabled={restoring === lead.id}
-                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-accent border border-accent/25 hover:bg-accent/8 transition-all disabled:opacity-50"
-                  >
-                    <RotateCcw size={11} />
-                    {restoring === lead.id ? 'Restoring…' : 'Restore'}
-                  </button>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-      </section>
 
       {/* App Appearance */}
       <section className="glass rounded-2xl p-6 mt-8">
