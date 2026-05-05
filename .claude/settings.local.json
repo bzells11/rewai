@@ -37,7 +37,9 @@
       "Bash(curl *)",
       "Bash(lsof -ti:3001)",
       "Read(//private/tmp/**)",
-      "Bash(echo \"Backend running: $\\(lsof -ti:3001)"
+      "Bash(echo \"Backend running: $\\(lsof -ti:3001)",
+      "Bash(sudo npm *)",
+      "Bash(railway *)"
     ]
   }
 }
