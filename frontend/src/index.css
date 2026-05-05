@@ -117,7 +117,7 @@ input, textarea, select {
 
 /* ─── Status badges ───────────────────────────────────── */
 .status-cold       { background: #f3f4f6;               color: #6b7280; }
-.status-active     { background: #dbeafe;                color: #1d4ed8; }
+.status-active     { background: #1d4ed8;                color: #ffffff; }
 .status-warm       { background: #fffbeb;               color: #b45309; }
 .status-hot        { background: #fef2f2;               color: #b91c1c; }
 .status-handed_off { background: rgba(16,185,129,0.12); color: #059669; }
