@@ -36,7 +36,8 @@
       "Skill(update-config)",
       "Bash(curl *)",
       "Bash(lsof -ti:3001)",
-      "Read(//private/tmp/**)"
+      "Read(//private/tmp/**)",
+      "Bash(echo \"Backend running: $\\(lsof -ti:3001)"
     ]
   }
 }

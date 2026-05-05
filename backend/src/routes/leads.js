@@ -218,13 +218,19 @@ router.post('/:id/message', async (req, res) => {
   if (!user?.twilio_sid) return res.status(400).json({ error: 'Twilio not configured' });
 
   const { sendSMS } = await import('../services/sms.js');
-  const sid = await sendSMS({
-    to: lead.phone,
-    from: user.twilio_number,
-    body,
-    twilioAccountSid: user.twilio_sid,
-    twilioAuthToken: user.twilio_auth_token,
-  });
+  let sid = null;
+  try {
+    sid = await sendSMS({
+      to: lead.phone,
+      from: user.twilio_number,
+      body,
+      twilioAccountSid: user.twilio_sid,
+      twilioAuthToken: user.twilio_auth_token,
+    });
+  } catch (smsErr) {
+    console.error('[SMS] send failed:', smsErr.message);
+    return res.status(502).json({ error: 'SMS send failed: ' + smsErr.message });
+  }
 
   const { data: msg } = await supabaseAdmin.from('conversations').insert({
     lead_id: lead.id,
