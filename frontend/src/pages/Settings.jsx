@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { apiFetch, supabase } from '../lib/supabase';
@@ -40,7 +40,7 @@ export default function Settings() {
   }
   const { theme, toggleTheme } = useTheme();
 
-  const { data: user } = useQuery({ queryKey: ['me'], queryFn: () => apiFetch('/users/me') });
+  const { data: user } = useQuery({ queryKey: ['me'], queryFn: () => apiFetch('/users/me'), staleTime: 0 });
   const { data: campaigns = [] } = useQuery({ queryKey: ['campaigns'], queryFn: () => apiFetch('/users/me/campaigns') });
   const { data: deletedLeads = [], refetch: refetchDeleted } = useQuery({
     queryKey: ['leads-deleted'],
@@ -48,25 +48,22 @@ export default function Settings() {
   });
 
   const [profile, setProfile] = useState({ name: '', company_name: '', buying_area: '', twilio_number: '', twilio_sid: '', twilio_auth_token: '', handoff_retention_days: 30 });
-  const profileInitialized = useRef(false);
   const [restoring, setRestoring] = useState(null);
   const [campaign, setCampaign] = useState({ name: 'Default', intro_template: '' });
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
 
   useEffect(() => {
-    if (user && !profileInitialized.current) {
-      profileInitialized.current = true;
-      setProfile({
-        name: user.name || '',
-        company_name: user.company_name || '',
-        buying_area: user.buying_area || '',
-        twilio_number: user.twilio_number || '',
-        twilio_sid: user.twilio_sid || '',
-        twilio_auth_token: '',
-        handoff_retention_days: user.handoff_retention_days ?? 30,
-      });
-    }
+    if (!user) return;
+    setProfile(prev => ({
+      name:                   prev.name || user.name || '',
+      company_name:           prev.company_name || user.company_name || '',
+      buying_area:            prev.buying_area || user.buying_area || '',
+      twilio_number:          prev.twilio_number || user.twilio_number || '',
+      twilio_sid:             prev.twilio_sid || user.twilio_sid || '',
+      twilio_auth_token:      prev.twilio_auth_token || '',
+      handoff_retention_days: prev.handoff_retention_days || user.handoff_retention_days || 30,
+    }));
   }, [user]);
 
   useEffect(() => {
