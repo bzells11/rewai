@@ -28,7 +28,13 @@ export default function Layout() {
     staleTime: 30_000,
   });
 
-  const userName = user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'User';
+  const { data: profile } = useQuery({
+    queryKey: ['me'],
+    queryFn: () => apiFetch('/users/me'),
+    staleTime: 60_000,
+  });
+
+  const userName = profile?.name || user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'User';
   const userInitial = userName[0]?.toUpperCase() ?? '?';
 
   const linkClass = ({ isActive }) =>
