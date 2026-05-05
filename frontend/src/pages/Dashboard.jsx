@@ -84,15 +84,16 @@ function TrashZone({ visible }) {
   return (
     <div
       ref={setNodeRef}
-      className={`fixed bottom-8 right-8 z-40 w-14 h-14 rounded-full flex items-center justify-center transition-all duration-200
-        ${visible ? 'opacity-100 scale-100' : 'opacity-0 scale-75 pointer-events-none'}
+      className={`fixed bottom-6 left-1/2 -translate-x-1/2 z-40 flex items-center gap-2.5 px-6 h-12 rounded-2xl transition-all duration-200
+        ${visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4 pointer-events-none'}
         ${isOver
-          ? 'bg-red-500 shadow-[0_0_18px_rgba(239,68,68,0.30)] scale-110'
+          ? 'bg-red-500 shadow-[0_0_24px_rgba(239,68,68,0.35)] scale-105'
           : 'bg-red-500/10 border-2 border-dashed border-red-400/40'
         }
       `}
     >
-      <Trash2 size={20} className={isOver ? 'text-white' : 'text-red-400'} />
+      <Trash2 size={16} className={isOver ? 'text-white' : 'text-red-400'} />
+      <span className={`text-sm font-medium ${isOver ? 'text-white' : 'text-red-400'}`}>Archive lead</span>
     </div>
   );
 }
