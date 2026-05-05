@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom';
-import { useDraggable } from '@dnd-kit/core';
+import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { Clock } from 'lucide-react';
 
@@ -25,11 +25,11 @@ function timeAgo(dateStr) {
 export default function LeadCard({ lead, isDragging, compact }) {
   const navigate = useNavigate();
 
-  const { attributes, listeners, setNodeRef, transform, isDragging: isCurrentlyDragging } = useDraggable({
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging: isCurrentlyDragging } = useSortable({
     id: lead.id,
   });
 
-  const style = transform ? { transform: CSS.Translate.toString(transform) } : undefined;
+  const style = { transform: CSS.Transform.toString(transform), transition };
 
   return (
     <div

@@ -9,6 +9,7 @@ import {
   closestCenter,
   useDroppable,
 } from '@dnd-kit/core';
+import { SortableContext, verticalListSortingStrategy, arrayMove } from '@dnd-kit/sortable';
 import { useNavigate } from 'react-router-dom';
 import { apiFetch } from '../lib/supabase';
 import LeadCard from '../components/LeadCard';
@@ -60,9 +61,11 @@ function KanbanColumn({ col, leads, compact }) {
             <span className="col-empty-msg text-xs text-muted text-center">{COLUMN_EMPTY_MSG[col.key]}</span>
           </div>
         )}
-        {leads.map(lead => (
-          <LeadCard key={lead.id} lead={lead} compact={compact} />
-        ))}
+        <SortableContext items={leads.map(l => l.id)} strategy={verticalListSortingStrategy}>
+          {leads.map(lead => (
+            <LeadCard key={lead.id} lead={lead} compact={compact} />
+          ))}
+        </SortableContext>
       </div>
     </div>
   );
@@ -160,6 +163,21 @@ export default function Dashboard() {
     onSettled: () => queryClient.invalidateQueries({ queryKey: ['leads'] }),
   });
 
+  const updatePosition = useMutation({
+    mutationFn: ({ id, position }) =>
+      apiFetch(`/leads/${id}`, { method: 'PATCH', body: JSON.stringify({ position }) }),
+    onMutate: async ({ id, position }) => {
+      await queryClient.cancelQueries({ queryKey: ['leads'] });
+      const prev = queryClient.getQueryData(['leads']);
+      queryClient.setQueryData(['leads'], old =>
+        old.map(l => l.id === id ? { ...l, position } : l)
+      );
+      return { prev };
+    },
+    onError: (_err, _vars, ctx) => queryClient.setQueryData(['leads'], ctx.prev),
+    onSettled: () => queryClient.invalidateQueries({ queryKey: ['leads'] }),
+  });
+
   const byStatus = COLUMNS.reduce((acc, col) => {
     acc[col.key] = leads.filter(l => l.status === col.key);
     return acc;
@@ -174,9 +192,35 @@ export default function Dashboard() {
     setActiveLead(null);
     if (!over) return;
     if (over.id === 'trash') { deleteLead.mutate(active.id); return; }
-    const lead = leads.find(l => l.id === active.id);
-    if (!lead || lead.status === over.id) return;
-    updateStatus.mutate({ id: lead.id, status: over.id });
+
+    const activeLead = leads.find(l => l.id === active.id);
+    if (!activeLead) return;
+
+    const isOverColumn = COLUMNS.some(c => c.key === over.id);
+
+    if (isOverColumn) {
+      // Cross-column move
+      if (activeLead.status !== over.id) {
+        updateStatus.mutate({ id: activeLead.id, status: over.id });
+      }
+    } else {
+      // Dropped on another card — reorder within column
+      const overLead = leads.find(l => l.id === over.id);
+      if (!overLead) return;
+      if (activeLead.status !== overLead.status) {
+        updateStatus.mutate({ id: activeLead.id, status: overLead.status });
+        return;
+      }
+      const colLeads = byStatus[activeLead.status];
+      const activeIndex = colLeads.findIndex(l => l.id === active.id);
+      const overIndex = colLeads.findIndex(l => l.id === over.id);
+      if (activeIndex === overIndex) return;
+      const reordered = arrayMove(colLeads, activeIndex, overIndex);
+      const prev = reordered[overIndex - 1]?.position ?? 0;
+      const next = reordered[overIndex + 1]?.position ?? (prev + 2_000_000);
+      const newPosition = Math.floor((prev + next) / 2);
+      updatePosition.mutate({ id: activeLead.id, position: newPosition });
+    }
   }
 
   return (

@@ -15,9 +15,9 @@ router.get('/', async (req, res) => {
   const buildQuery = (filterDeleted) => {
     let q = supabaseAdmin
       .from('leads')
-      .select('id, name, phone, address, status, situation, asking_price, timeline, ai_notes, ai_enabled, imported_at, last_contact_at')
+      .select('id, name, phone, address, status, situation, asking_price, timeline, ai_notes, ai_enabled, imported_at, last_contact_at, position')
       .eq('user_id', req.userId)
-      .order('imported_at', { ascending: false })
+      .order('position', { ascending: true })
       .limit(Number(limit));
     if (filterDeleted) q = q.is('deleted_at', null);
     if (status) q = q.eq('status', status);
@@ -146,7 +146,7 @@ router.post('/bulk', async (req, res) => {
 
 // PATCH /leads/:id — update status, ai_enabled, or notes
 router.patch('/:id', async (req, res) => {
-  const allowed = ['status', 'ai_enabled', 'ai_notes', 'situation', 'asking_price', 'timeline', 'name', 'address', 'phone'];
+  const allowed = ['status', 'ai_enabled', 'ai_notes', 'situation', 'asking_price', 'timeline', 'name', 'address', 'phone', 'position'];
   const updates = Object.fromEntries(
     Object.entries(req.body).filter(([k]) => allowed.includes(k))
   );
