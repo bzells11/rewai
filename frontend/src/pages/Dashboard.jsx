@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   DndContext,
@@ -108,6 +108,7 @@ export default function Dashboard() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [activeLead, setActiveLead] = useState(null);
+  const [localLeads, setLocalLeads] = useState([]);
   const [compact, setCompact] = useState(
     () => localStorage.getItem('rewai-compact') === 'true'
   );
@@ -129,6 +130,11 @@ export default function Dashboard() {
     queryFn: () => apiFetch('/leads'),
     refetchInterval: 10_000,
   });
+
+  // Sync local order from server when not dragging
+  useEffect(() => {
+    if (!activeLead) setLocalLeads(leads);
+  }, [leads, activeLead]);
 
   const { data: stats } = useQuery({
     queryKey: ['stats'],
@@ -186,47 +192,62 @@ export default function Dashboard() {
   });
 
   const byStatus = COLUMNS.reduce((acc, col) => {
-    acc[col.key] = leads.filter(l => l.status === col.key);
+    acc[col.key] = localLeads.filter(l => l.status === col.key);
     return acc;
   }, {});
 
   function handleDragStart(event) {
-    setActiveLead(leads.find(l => l.id === event.active.id) ?? null);
+    setActiveLead(localLeads.find(l => l.id === event.active.id) ?? null);
+  }
+
+  function handleDragOver(event) {
+    const { active, over } = event;
+    if (!over || active.id === over.id) return;
+    const isOverColumn = COLUMNS.some(c => c.key === over.id);
+    if (isOverColumn) return;
+
+    const activeItem = localLeads.find(l => l.id === active.id);
+    const overItem   = localLeads.find(l => l.id === over.id);
+    if (!activeItem || !overItem || activeItem.status !== overItem.status) return;
+
+    setLocalLeads(prev => {
+      const col    = prev.filter(l => l.status === activeItem.status);
+      const others = prev.filter(l => l.status !== activeItem.status);
+      const from   = col.findIndex(l => l.id === active.id);
+      const to     = col.findIndex(l => l.id === over.id);
+      if (from === to) return prev;
+      return [...others, ...arrayMove(col, from, to)];
+    });
   }
 
   function handleDragEnd(event) {
     const { active, over } = event;
     setActiveLead(null);
-    if (!over) return;
+    if (!over) { setLocalLeads(leads); return; }
     if (over.id === 'trash') { deleteLead.mutate(active.id); return; }
 
-    const activeLead = leads.find(l => l.id === active.id);
-    if (!activeLead) return;
+    const activeItem = localLeads.find(l => l.id === active.id);
+    if (!activeItem) return;
 
     const isOverColumn = COLUMNS.some(c => c.key === over.id);
 
     if (isOverColumn) {
-      // Cross-column move
-      if (activeLead.status !== over.id) {
-        updateStatus.mutate({ id: activeLead.id, status: over.id });
+      if (activeItem.status !== over.id) {
+        updateStatus.mutate({ id: activeItem.id, status: over.id });
       }
     } else {
-      // Dropped on another card — reorder within column
-      const overLead = leads.find(l => l.id === over.id);
-      if (!overLead) return;
-      if (activeLead.status !== overLead.status) {
-        updateStatus.mutate({ id: activeLead.id, status: overLead.status });
+      const overItem = localLeads.find(l => l.id === over.id);
+      if (overItem && activeItem.status !== overItem.status) {
+        updateStatus.mutate({ id: activeItem.id, status: overItem.status });
         return;
       }
-      const colLeads = byStatus[activeLead.status];
-      const activeIndex = colLeads.findIndex(l => l.id === active.id);
-      const overIndex = colLeads.findIndex(l => l.id === over.id);
-      if (activeIndex === overIndex) return;
-      const reordered = arrayMove(colLeads, activeIndex, overIndex);
-      const prev = reordered[overIndex - 1]?.position ?? 0;
-      const next = reordered[overIndex + 1]?.position ?? (prev + 2_000_000);
-      const newPosition = Math.floor((prev + next) / 2);
-      updatePosition.mutate({ id: activeLead.id, position: newPosition });
+      // Same-column reorder — compute position from current localLeads order
+      const colLeads   = localLeads.filter(l => l.status === activeItem.status);
+      const finalIndex = colLeads.findIndex(l => l.id === active.id);
+      const prev       = colLeads[finalIndex - 1]?.position ?? 0;
+      const next       = colLeads[finalIndex + 1]?.position ?? (prev + 2_000_000);
+      const newPos     = Math.floor((prev + next) / 2);
+      updatePosition.mutate({ id: activeItem.id, position: newPos });
     }
   }
 
@@ -235,6 +256,7 @@ export default function Dashboard() {
       sensors={sensors}
       collisionDetection={collisionDetection}
       onDragStart={handleDragStart}
+      onDragOver={handleDragOver}
       onDragEnd={handleDragEnd}
     >
       <div className="h-full flex flex-col">
