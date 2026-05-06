@@ -4,7 +4,7 @@ const ThemeContext = createContext(null);
 
 export function ThemeProvider({ children }) {
   const [theme, setTheme] = useState(
-    () => localStorage.getItem('rewai-theme') || 'light'
+    () => localStorage.getItem('rewai-theme') || 'dark'
   );
 
   useEffect(() => {
