@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { apiFetch, supabase } from '../lib/supabase';
-import { Save, CheckCircle, MessageSquare, LogOut, Sun, Moon, Check, ExternalLink } from 'lucide-react';
+import { Save, CheckCircle, MessageSquare, LogOut, Sun, Moon, Check, ExternalLink, Lock } from 'lucide-react';
 import { useTheme } from '../lib/ThemeContext';
 
 export default function Settings() {
@@ -102,12 +102,14 @@ export default function Settings() {
           <div className="space-y-4">
             {user?.email && (
               <div>
-                <label className="text-xs text-text-secondary block mb-1.5">Email</label>
+                <label className="text-xs text-text-secondary flex items-center gap-1 mb-1.5">
+                  Email <Lock size={10} className="text-muted" />
+                </label>
                 <input
                   type="text"
                   value={user.email}
                   readOnly
-                  className={`${inputClass} opacity-60 cursor-default`}
+                  className={`${inputClass} opacity-50 cursor-not-allowed select-all`}
                 />
               </div>
             )}
