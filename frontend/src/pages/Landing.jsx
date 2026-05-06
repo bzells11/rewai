@@ -12,7 +12,7 @@ const FEATURES = [
     icon: Bot,
     color: '#38bdf8',
     title: 'AI Conversations',
-    desc: 'Claude AI texts your sellers, handles objections, and qualifies leads 24/7, in your voice, never robotic.',
+    desc: 'Our AI texts your sellers, handles objections, and qualifies leads 24/7, in your voice, never robotic.',
   },
   {
     icon: Flame,
