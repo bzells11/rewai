@@ -54,6 +54,89 @@ router.patch('/users/:id', async (req, res) => {
   res.json(data);
 });
 
+// ── User actions ───────────────────────────────────────────────────
+
+router.post('/users/:id/reset-password', async (req, res) => {
+  const { data: user } = await supabaseAdmin.from('users').select('email').eq('id', req.params.id).single();
+  if (!user) return res.status(404).json({ error: 'User not found' });
+  const { error } = await supabaseAdmin.auth.resetPasswordForEmail(user.email, {
+    redirectTo: `${process.env.FRONTEND_URL}/login`,
+  });
+  if (error) return res.status(500).json({ error: error.message });
+  res.json({ ok: true });
+});
+
+router.patch('/users/:id/email', async (req, res) => {
+  const { email } = req.body;
+  if (!email) return res.status(400).json({ error: 'email required' });
+  const { error } = await supabaseAdmin.auth.admin.updateUserById(req.params.id, { email });
+  if (error) return res.status(500).json({ error: error.message });
+  await supabaseAdmin.from('users').update({ email }).eq('id', req.params.id);
+  res.json({ ok: true });
+});
+
+router.patch('/users/:id/password', async (req, res) => {
+  const { password } = req.body;
+  if (!password || password.length < 6) return res.status(400).json({ error: 'Password must be at least 6 characters' });
+  const { error } = await supabaseAdmin.auth.admin.updateUserById(req.params.id, { password });
+  if (error) return res.status(500).json({ error: error.message });
+  res.json({ ok: true });
+});
+
+router.delete('/users/:id', async (req, res) => {
+  const { error } = await supabaseAdmin.auth.admin.deleteUser(req.params.id);
+  if (error) return res.status(500).json({ error: error.message });
+  res.status(204).end();
+});
+
+router.post('/users/:id/force-logout', async (req, res) => {
+  const { error } = await supabaseAdmin.auth.admin.signOut(req.params.id, 'global');
+  if (error) return res.status(500).json({ error: error.message });
+  res.json({ ok: true });
+});
+
+router.post('/users/:id/cancel-subscription', async (req, res) => {
+  const { data: user } = await supabaseAdmin.from('users').select('stripe_customer_id').eq('id', req.params.id).single();
+  if (!user?.stripe_customer_id) return res.status(400).json({ error: 'No Stripe customer on file' });
+  const { default: Stripe } = await import('stripe');
+  const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
+  const subs = await stripe.subscriptions.list({ customer: user.stripe_customer_id, status: 'active', limit: 1 });
+  if (!subs.data.length) return res.status(400).json({ error: 'No active subscription found' });
+  await stripe.subscriptions.cancel(subs.data[0].id);
+  await supabaseAdmin.from('users').update({ plan: 'starter' }).eq('id', req.params.id);
+  res.json({ ok: true });
+});
+
+router.post('/users/:id/extend-trial', async (req, res) => {
+  const { days } = req.body;
+  if (!days || days < 1) return res.status(400).json({ error: 'days required' });
+  const { data: user } = await supabaseAdmin.from('users').select('stripe_customer_id').eq('id', req.params.id).single();
+  if (!user?.stripe_customer_id) return res.status(400).json({ error: 'No Stripe customer on file' });
+  const { default: Stripe } = await import('stripe');
+  const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
+  const subs = await stripe.subscriptions.list({ customer: user.stripe_customer_id, status: 'active', limit: 1 });
+  if (!subs.data.length) return res.status(400).json({ error: 'No active subscription found' });
+  const trialEnd = Math.floor(Date.now() / 1000) + Number(days) * 86400;
+  await stripe.subscriptions.update(subs.data[0].id, { trial_end: trialEnd });
+  res.json({ ok: true });
+});
+
+router.patch('/users/:id/billing-date', async (req, res) => {
+  const { billing_date } = req.body;
+  if (!billing_date) return res.status(400).json({ error: 'billing_date (unix timestamp) required' });
+  const { data: user } = await supabaseAdmin.from('users').select('stripe_customer_id').eq('id', req.params.id).single();
+  if (!user?.stripe_customer_id) return res.status(400).json({ error: 'No Stripe customer on file' });
+  const { default: Stripe } = await import('stripe');
+  const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
+  const subs = await stripe.subscriptions.list({ customer: user.stripe_customer_id, status: 'active', limit: 1 });
+  if (!subs.data.length) return res.status(400).json({ error: 'No active subscription found' });
+  await stripe.subscriptions.update(subs.data[0].id, {
+    billing_cycle_anchor: Number(billing_date),
+    proration_behavior: 'none',
+  });
+  res.json({ ok: true });
+});
+
 // ── Leads ──────────────────────────────────────────────────────────
 
 router.get('/leads', async (req, res) => {
