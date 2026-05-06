@@ -100,6 +100,14 @@ export default function Settings() {
         <section className="glass rounded-2xl p-6">
           <h2 className="font-display font-semibold text-text-primary mb-5">Your Profile</h2>
           <div className="space-y-4">
+            {user?.email && (
+              <div>
+                <label className="text-xs text-text-secondary block mb-1.5">Email</label>
+                <div className="w-full bg-dim/5 border border-border rounded-xl px-4 py-2.5 text-sm text-muted cursor-default select-all">
+                  {user.email}
+                </div>
+              </div>
+            )}
             {[
               { key: 'name',         label: 'Your Name',    placeholder: 'Brandon Zeller' },
               { key: 'company_name', label: 'Company Name', placeholder: 'Zeller Properties' },
