@@ -110,7 +110,7 @@ export default function Dashboard() {
   const queryClient = useQueryClient();
   const [activeLead, setActiveLead] = useState(null);
   const [localLeads, setLocalLeads] = useState([]);
-  const [statusFilter, setStatusFilter] = useState('all');
+  const [sortBy, setSortBy] = useState('default');
   const [compact, setCompact] = useState(
     () => localStorage.getItem('rewai-compact') === 'true'
   );
@@ -195,9 +195,19 @@ export default function Dashboard() {
   });
 
   const byStatus = COLUMNS.reduce((acc, col) => {
-    acc[col.key] = localLeads.filter(l =>
-      l.status === col.key && (statusFilter === 'all' || l.status === statusFilter)
-    );
+    let colLeads = localLeads.filter(l => l.status === col.key);
+
+    if (sortBy === 'contacted')   colLeads = colLeads.filter(l => !!l.last_contact_at);
+    if (sortBy === 'uncontacted') colLeads = colLeads.filter(l => !l.last_contact_at);
+
+    if (sortBy === 'name')    colLeads = [...colLeads].sort((a, b) => a.name.localeCompare(b.name));
+    if (sortBy === 'date')    colLeads = [...colLeads].sort((a, b) => new Date(b.imported_at) - new Date(a.imported_at));
+    if (sortBy === 'price')   colLeads = [...colLeads].sort((a, b) => (b.asking_price ?? 0) - (a.asking_price ?? 0));
+    if (sortBy === 'contacted' || sortBy === 'uncontacted') {
+      colLeads = [...colLeads].sort((a, b) => new Date(b.last_contact_at ?? 0) - new Date(a.last_contact_at ?? 0));
+    }
+
+    acc[col.key] = colLeads;
     return acc;
   }, {});
 
@@ -314,24 +324,27 @@ export default function Dashboard() {
           </div>
         </div>
 
-        {/* Filters */}
-        <div className="px-8 py-3 border-b border-border flex items-center gap-2">
-          {[{ key: 'all', label: 'All Leads' }, ...COLUMNS.map(c => ({ key: c.key, label: c.label }))].map(f => (
+        {/* Sort / Filter bar */}
+        <div className="px-8 py-3 border-b border-border flex items-center gap-2 flex-wrap">
+          <span className="text-xs text-muted mr-1">Sort by</span>
+          {[
+            { key: 'default',     label: 'Default' },
+            { key: 'name',        label: 'Name A→Z' },
+            { key: 'date',        label: 'Date Added' },
+            { key: 'price',       label: 'Asking Price' },
+            { key: 'contacted',   label: 'Contacted' },
+            { key: 'uncontacted', label: 'Not Contacted' },
+          ].map(({ key, label }) => (
             <button
-              key={f.key}
-              onClick={() => setStatusFilter(f.key)}
+              key={key}
+              onClick={() => setSortBy(key)}
               className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all duration-150
-                ${statusFilter === f.key
+                ${sortBy === key
                   ? 'bg-accent/10 text-accent'
                   : 'text-[#6b7280] hover:text-text-secondary hover:bg-dim/5'
                 }`}
             >
-              {f.label}
-              {f.key !== 'all' && (
-                <span className="ml-1.5 opacity-60">
-                  {localLeads.filter(l => l.status === f.key).length}
-                </span>
-              )}
+              {label}
             </button>
           ))}
         </div>
