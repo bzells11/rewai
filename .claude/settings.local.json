@@ -39,7 +39,10 @@
       "Read(//private/tmp/**)",
       "Bash(echo \"Backend running: $\\(lsof -ti:3001)",
       "Bash(sudo npm *)",
-      "Bash(railway *)"
+      "Bash(railway *)",
+      "Bash(vercel deploy *)",
+      "Bash(vercel env *)",
+      "Bash(vercel ls *)"
     ]
   }
 }
