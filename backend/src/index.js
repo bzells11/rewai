@@ -5,6 +5,7 @@ import twilioRoutes from './routes/twilio.js';
 import leadsRoutes from './routes/leads.js';
 import usersRoutes from './routes/users.js';
 import billingRoutes from './routes/billing.js';
+import adminRoutes from './routes/admin.js';
 import { startScheduler } from './services/scheduler.js';
 
 const app = express();
@@ -29,6 +30,7 @@ app.use('/twilio', twilioRoutes);
 app.use('/leads', leadsRoutes);
 app.use('/users', usersRoutes);
 app.use('/billing', billingRoutes);
+app.use('/admin', adminRoutes);
 
 app.listen(PORT, () => {
   console.log(`[server] running on port ${PORT}`);

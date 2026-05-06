@@ -10,7 +10,7 @@ router.use(requireAuth);
 router.get('/me', async (req, res) => {
   let { data, error } = await supabaseAdmin
     .from('users')
-    .select('id, email, name, company_name, buying_area, twilio_number, twilio_sid, twilio_auth_token, plan, handoff_retention_days, created_at')
+    .select('id, email, name, company_name, buying_area, twilio_number, twilio_sid, twilio_auth_token, plan, handoff_retention_days, created_at, is_admin')
     .eq('id', req.userId)
     .single();
 

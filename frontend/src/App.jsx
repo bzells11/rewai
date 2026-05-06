@@ -12,6 +12,8 @@ import LeadDetail from './pages/LeadDetail';
 import Import from './pages/Import';
 import Settings from './pages/Settings';
 import Archive from './pages/Archive';
+import Admin from './pages/Admin';
+import AdminGuard from './components/AdminGuard';
 
 export default function App() {
   const [session, setSession] = useState(undefined); // undefined = loading
@@ -45,6 +47,12 @@ export default function App() {
           <Route path="/settings" element={<Settings />} />
           <Route path="/archive" element={<Archive />} />
         </Route>
+        {/* Admin — hidden from nav, guarded by is_admin flag */}
+        <Route path="/admin" element={
+          session
+            ? <AdminGuard><Admin /></AdminGuard>
+            : <Navigate to="/login" replace />
+        } />
         <Route path="*" element={<Navigate to={session ? '/dashboard' : '/'} replace />} />
       </Routes>
     </BrowserRouter>
