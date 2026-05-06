@@ -110,6 +110,7 @@ export default function Dashboard() {
   const queryClient = useQueryClient();
   const [activeLead, setActiveLead] = useState(null);
   const [localLeads, setLocalLeads] = useState([]);
+  const [statusFilter, setStatusFilter] = useState('all');
   const [compact, setCompact] = useState(
     () => localStorage.getItem('rewai-compact') === 'true'
   );
@@ -194,7 +195,9 @@ export default function Dashboard() {
   });
 
   const byStatus = COLUMNS.reduce((acc, col) => {
-    acc[col.key] = localLeads.filter(l => l.status === col.key);
+    acc[col.key] = localLeads.filter(l =>
+      l.status === col.key && (statusFilter === 'all' || l.status === statusFilter)
+    );
     return acc;
   }, {});
 
@@ -309,6 +312,28 @@ export default function Dashboard() {
               );
             })}
           </div>
+        </div>
+
+        {/* Filters */}
+        <div className="px-8 py-3 border-b border-border flex items-center gap-2">
+          {[{ key: 'all', label: 'All Leads' }, ...COLUMNS.map(c => ({ key: c.key, label: c.label }))].map(f => (
+            <button
+              key={f.key}
+              onClick={() => setStatusFilter(f.key)}
+              className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all duration-150
+                ${statusFilter === f.key
+                  ? 'bg-accent/10 text-accent'
+                  : 'text-[#6b7280] hover:text-text-secondary hover:bg-dim/5'
+                }`}
+            >
+              {f.label}
+              {f.key !== 'all' && (
+                <span className="ml-1.5 opacity-60">
+                  {localLeads.filter(l => l.status === f.key).length}
+                </span>
+              )}
+            </button>
+          ))}
         </div>
 
         {/* Kanban */}
