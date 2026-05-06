@@ -3,7 +3,7 @@ import { Outlet, NavLink } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import {
   BarChart2, Mail, MessageSquare, TrendingUp, Users, ScanLine,
-  Plug, Settings, Archive,
+  Plug, Settings, Archive, ShieldCheck,
 } from 'lucide-react';
 import { supabase, apiFetch } from '../lib/supabase';
 
@@ -129,6 +129,12 @@ export default function Layout() {
                 <Plug size={16} />
                 <span className="flex-1">Integrations</span>
               </NavLink>
+              {profile?.is_admin && (
+                <NavLink to="/admin" className={linkClass}>
+                  <ShieldCheck size={16} />
+                  <span className="flex-1">Admin</span>
+                </NavLink>
+              )}
             </div>
           </div>
 
