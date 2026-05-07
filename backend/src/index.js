@@ -17,7 +17,15 @@ const allowedOrigins = [
   process.env.FRONTEND_URL,
 ].filter(Boolean);
 
-app.use(cors({ origin: (origin, cb) => cb(null, !origin || allowedOrigins.includes(origin)) }));
+function isAllowedOrigin(origin) {
+  if (!origin) return true;
+  if (allowedOrigins.includes(origin)) return true;
+  // Allow all Vercel preview deployments for this project
+  if (/^https:\/\/frontend(-[a-z0-9]+)?-bzells11s-projects\.vercel\.app$/.test(origin)) return true;
+  return false;
+}
+
+app.use(cors({ origin: (origin, cb) => cb(null, isAllowedOrigin(origin)) }));
 
 // Webhook must receive raw body — register before express.json()
 app.use('/billing/webhook', express.raw({ type: 'application/json' }));
