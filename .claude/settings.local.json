@@ -44,7 +44,9 @@
       "Bash(vercel env *)",
       "Bash(vercel ls *)",
       "Bash(node -e \"const l = require\\('/Users/brandonzeller/Documents/CODING/REW AI/frontend/node_modules/lucide-react'\\); console.log\\('ClipboardList:', !!l.ClipboardList, 'StickyNote:', !!l.StickyNote, 'UserCheck:', !!l.UserCheck, 'Bot:', !!l.Bot\\)\")",
-      "Bash(node -e 'const {createClient}=require\\(\"@supabase/supabase-js\"\\);const s=createClient\\(\"https://akmjnbddqavjdkhqcoyh.supabase.co\",\"sb_publishable_4L7YD0aqpC39Q1v7GOnpiA_gSsCZ_uq\"\\);s.auth.getSession\\(\\).then\\(r=>console.log\\(r.data.session?.access_token||\"no-session\"\\)\\)')"
+      "Bash(node -e 'const {createClient}=require\\(\"@supabase/supabase-js\"\\);const s=createClient\\(\"https://akmjnbddqavjdkhqcoyh.supabase.co\",\"sb_publishable_4L7YD0aqpC39Q1v7GOnpiA_gSsCZ_uq\"\\);s.auth.getSession\\(\\).then\\(r=>console.log\\(r.data.session?.access_token||\"no-session\"\\)\\)')",
+      "Bash(git checkout *)",
+      "Bash(git merge *)"
     ]
   }
 }
