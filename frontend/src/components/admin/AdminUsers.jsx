@@ -4,6 +4,7 @@ import { apiFetch } from '../../lib/supabase';
 import {
   Search, ChevronLeft, ChevronRight, X, CheckCircle, AlertCircle,
   Mail, Key, Lock, Trash2, LogOut, CreditCard, Calendar, Gift, RefreshCw,
+  UserCheck, Download, Bot, StickyNote,
 } from 'lucide-react';
 
 // ── Toast ──────────────────────────────────────────────────────────
@@ -145,9 +146,44 @@ export default function AdminUsers() {
   const [planFilter, setPlanFilter] = useState('');
   const [selected, setSelected]   = useState(null);
   const [toast, setToast]         = useState(null);
-  const [modal, setModal]         = useState(null); // { type, ... }
+  const [modal, setModal]         = useState(null);
+  const [notes, setNotes]         = useState('');
+  const [notesSaving, setNotesSaving] = useState(false);
 
   const showToast = (message, type = 'success') => setToast({ message, type });
+
+  // Sync notes from detail
+  useEffect(() => { if (detail) setNotes(detail.admin_notes || ''); }, [detail?.id]);
+
+  async function exportCSV() {
+    const p = new URLSearchParams();
+    if (search) p.set('search', search);
+    if (planFilter) p.set('plan', planFilter);
+    const rows = await apiFetch(`/admin/users/export?${p}`).catch(e => { showToast(e.message, 'error'); return null; });
+    if (!rows) return;
+    const cols = ['id','email','name','company_name','plan','created_at','twilio_number'];
+    const csv = [cols.join(','), ...rows.map(r => cols.map(c => JSON.stringify(r[c] ?? '')).join(','))].join('\n');
+    const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv' }));
+    a.download = `users_${new Date().toISOString().slice(0,10)}.csv`; a.click();
+  }
+
+  async function impersonate() {
+    try {
+      const { link, email } = await apiFetch(`/admin/users/${selected}/impersonate`, { method: 'POST' });
+      showToast(`Opening session as ${email}`);
+      window.open(link, '_blank');
+    } catch (e) { showToast(e.message, 'error'); }
+  }
+
+  async function saveNotes() {
+    setNotesSaving(true);
+    try {
+      await apiFetch(`/admin/users/${selected}/notes`, { method: 'PATCH', body: JSON.stringify({ notes }) });
+      qc.invalidateQueries(['admin-user', selected]);
+      showToast('Notes saved');
+    } catch (e) { showToast(e.message, 'error'); }
+    finally { setNotesSaving(false); }
+  }
 
   const { data, isLoading } = useQuery({
     queryKey: ['admin-users', page, search, planFilter],
@@ -291,7 +327,12 @@ export default function AdminUsers() {
         <div className="px-8 pt-8 pb-5 border-b border-border">
           <div className="flex items-center justify-between mb-4">
             <h2 className="font-display font-bold text-xl text-text-primary">Users</h2>
-            <span className="text-xs text-muted">{total} total</span>
+            <div className="flex items-center gap-2">
+              <span className="text-xs text-muted">{total} total</span>
+              <button onClick={() => exportCSV()} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border border-border text-text-secondary hover:bg-dim/5 transition-all">
+                <Download size={12} /> Export CSV
+              </button>
+            </div>
           </div>
           <div className="flex gap-3">
             <div className="relative flex-1">
@@ -320,8 +361,8 @@ export default function AdminUsers() {
             <table className="w-full text-sm">
               <thead className="sticky top-0 bg-surface border-b border-border">
                 <tr>
-                  {['Name', 'Email', 'Plan', 'Joined', 'Twilio'].map(h => (
-                    <th key={h} className="px-6 py-3 text-left text-xs font-semibold text-muted">{h}</th>
+                  {['Name', 'Email', 'Plan', 'Onboarding', 'AI Msgs', 'Joined'].map(h => (
+                    <th key={h} className="px-4 py-3 text-left text-xs font-semibold text-muted">{h}</th>
                   ))}
                 </tr>
               </thead>
@@ -329,15 +370,31 @@ export default function AdminUsers() {
                 {users.map(u => (
                   <tr key={u.id} onClick={() => setSelected(u.id)}
                     className={`cursor-pointer hover:bg-dim/3 transition-colors ${selected === u.id ? 'bg-accent/5' : ''}`}>
-                    <td className="px-6 py-3 text-text-primary font-medium">{u.name || '—'}</td>
-                    <td className="px-6 py-3 text-text-secondary">{u.email}</td>
-                    <td className="px-6 py-3">
+                    <td className="px-4 py-3 text-text-primary font-medium text-sm">{u.name || '—'}</td>
+                    <td className="px-4 py-3 text-text-secondary text-xs">{u.email}</td>
+                    <td className="px-4 py-3">
                       <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full capitalize ${PLAN_COLORS[u.plan] || PLAN_COLORS.starter}`}>
                         {u.plan}
                       </span>
                     </td>
-                    <td className="px-6 py-3 text-muted text-xs">{new Date(u.created_at).toLocaleDateString()}</td>
-                    <td className="px-6 py-3 text-muted text-xs">{u.twilio_number || '—'}</td>
+                    <td className="px-4 py-3">
+                      {u.onboarding ? (() => {
+                        const done = Object.values(u.onboarding).filter(Boolean).length;
+                        const total = Object.keys(u.onboarding).length;
+                        return (
+                          <div className="flex items-center gap-2">
+                            <div className="flex gap-0.5">
+                              {Object.values(u.onboarding).map((v, i) => (
+                                <span key={i} className={`w-2 h-2 rounded-full ${v ? 'bg-accent' : 'bg-dim/20'}`} />
+                              ))}
+                            </div>
+                            <span className="text-[10px] text-muted">{done}/{total}</span>
+                          </div>
+                        );
+                      })() : '—'}
+                    </td>
+                    <td className="px-4 py-3 text-muted text-xs">{u.ai_messages_total ?? '—'}</td>
+                    <td className="px-4 py-3 text-muted text-xs">{new Date(u.created_at).toLocaleDateString()}</td>
                   </tr>
                 ))}
               </tbody>
@@ -400,6 +457,66 @@ export default function AdminUsers() {
                 <Row label="Twilio"   value={detail.twilio_number} />
                 <Row label="Joined"   value={new Date(detail.created_at).toLocaleDateString()} />
                 <Row label="Admin"    value={detail.is_admin ? 'Yes' : 'No'} />
+              </div>
+
+              {/* Impersonate */}
+              <button onClick={impersonate}
+                className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-semibold border border-amber-500/30 text-amber-400 bg-amber-500/8 hover:bg-amber-500/15 transition-all">
+                <UserCheck size={14} /> Impersonate User
+              </button>
+
+              {/* Onboarding */}
+              {detail.onboarding && (
+                <div>
+                  <p className="text-[10px] font-bold text-muted tracking-widest uppercase mb-1.5">Onboarding ({Object.values(detail.onboarding).filter(Boolean).length}/{Object.keys(detail.onboarding).length})</p>
+                  <div className="glass rounded-xl divide-y divide-border">
+                    {[
+                      { key: 'account',  label: 'Account created' },
+                      { key: 'twilio',   label: 'Twilio credentials added' },
+                      { key: 'campaign', label: 'First campaign created' },
+                      { key: 'lead',     label: 'First lead imported' },
+                      { key: 'message',  label: 'First message sent' },
+                    ].map(({ key, label }) => (
+                      <div key={key} className="flex items-center gap-2.5 px-3 py-2">
+                        <span className={`w-2 h-2 rounded-full shrink-0 ${detail.onboarding[key] ? 'bg-accent' : 'bg-dim/20'}`} />
+                        <span className={`text-xs ${detail.onboarding[key] ? 'text-text-primary' : 'text-muted'}`}>{label}</span>
+                        {detail.onboarding[key] && <CheckCircle size={11} className="text-accent ml-auto" />}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* AI Usage */}
+              <div>
+                <p className="text-[10px] font-bold text-muted tracking-widest uppercase mb-1.5">AI Usage</p>
+                <div className="glass rounded-xl p-3 space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs text-muted flex items-center gap-1.5"><Bot size={11} /> Total AI messages</span>
+                    <span className="text-xs font-semibold text-text-primary">{detail.ai_messages_total ?? 0}</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs text-muted">Last 30 days</span>
+                    <span className="text-xs font-semibold text-accent">{detail.ai_messages_30d ?? 0}</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Admin Notes */}
+              <div>
+                <div className="flex items-center justify-between mb-1.5">
+                  <p className="text-[10px] font-bold text-muted tracking-widest uppercase flex items-center gap-1"><StickyNote size={10} /> Admin Notes</p>
+                  {detail.admin_notes_updated_at && (
+                    <span className="text-[10px] text-muted">Saved {new Date(detail.admin_notes_updated_at).toLocaleDateString()}</span>
+                  )}
+                </div>
+                <textarea value={notes} onChange={e => setNotes(e.target.value)} rows={4}
+                  placeholder="Internal notes — never visible to the user..."
+                  className="w-full bg-dim/5 border border-border rounded-xl px-3 py-2.5 text-xs text-text-primary placeholder:text-muted focus:outline-none focus:border-accent/50 resize-none leading-relaxed" />
+                <button onClick={saveNotes} disabled={notesSaving || notes === (detail.admin_notes || '')}
+                  className="mt-2 w-full py-2 rounded-lg text-xs font-medium bg-accent/10 text-accent hover:bg-accent/20 transition-all disabled:opacity-40">
+                  {notesSaving ? 'Saving...' : 'Save Notes'}
+                </button>
               </div>
 
               {/* Change plan */}

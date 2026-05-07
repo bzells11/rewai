@@ -1,11 +1,24 @@
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { apiFetch } from '../../lib/supabase';
-import { Search, ChevronLeft, ChevronRight, X } from 'lucide-react';
+import { Search, ChevronLeft, ChevronRight, X, Download } from 'lucide-react';
 
 export default function AdminLeads() {
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState('');
+  const [exportError, setExportError] = useState('');
+
+  async function exportCSV() {
+    const p = new URLSearchParams();
+    if (search) p.set('search', search);
+    if (statusFilter) p.set('status', statusFilter);
+    const rows = await apiFetch(`/admin/leads/export?${p}`).catch(() => null);
+    if (!rows) return;
+    const cols = ['id','name','phone','address','status','last_contact_at','imported_at'];
+    const csv = [cols.join(','), ...rows.map(r => cols.map(c => JSON.stringify(r[c] ?? '')).join(','))].join('\n');
+    const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv' }));
+    a.download = `leads_${new Date().toISOString().slice(0,10)}.csv`; a.click();
+  }
   const [statusFilter, setStatusFilter] = useState('');
   const [selected, setSelected] = useState(null);
 
@@ -36,7 +49,12 @@ export default function AdminLeads() {
         <div className="px-8 pt-8 pb-5 border-b border-border">
           <div className="flex items-center justify-between mb-4">
             <h2 className="font-display font-bold text-xl text-text-primary">All Leads</h2>
-            <span className="text-xs text-muted">{total} total</span>
+            <div className="flex items-center gap-2">
+              <span className="text-xs text-muted">{total} total</span>
+              <button onClick={exportCSV} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border border-border text-text-secondary hover:bg-dim/5 transition-all">
+                <Download size={12} /> Export CSV
+              </button>
+            </div>
           </div>
           <div className="flex gap-3">
             <div className="relative flex-1">

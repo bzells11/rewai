@@ -1,11 +1,23 @@
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { apiFetch } from '../../lib/supabase';
-import { Search, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Search, ChevronLeft, ChevronRight, Download } from 'lucide-react';
 
 export default function AdminSmsLogs() {
   const [page, setPage] = useState(1);
   const [direction, setDirection] = useState('');
+
+  async function exportCSV() {
+    const p = new URLSearchParams();
+    if (direction) p.set('direction', direction);
+    if (search) p.set('search', search);
+    const rows = await apiFetch(`/admin/sms-logs/export?${p}`).catch(() => null);
+    if (!rows) return;
+    const cols = ['id','sent_at','direction','ai_generated','body'];
+    const csv = [cols.join(','), ...rows.map(r => cols.map(c => JSON.stringify(r[c] ?? '')).join(','))].join('\n');
+    const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv' }));
+    a.download = `sms_logs_${new Date().toISOString().slice(0,10)}.csv`; a.click();
+  }
   const [search, setSearch] = useState('');
 
   const { data, isLoading } = useQuery({
@@ -28,7 +40,12 @@ export default function AdminSmsLogs() {
       <div className="px-8 pt-8 pb-5 border-b border-border">
         <div className="flex items-center justify-between mb-4">
           <h2 className="font-display font-bold text-xl text-text-primary">SMS Logs</h2>
-          <span className="text-xs text-muted">{total.toLocaleString()} messages</span>
+          <div className="flex items-center gap-2">
+            <span className="text-xs text-muted">{total.toLocaleString()} messages</span>
+            <button onClick={exportCSV} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border border-border text-text-secondary hover:bg-dim/5 transition-all">
+              <Download size={12} /> Export CSV
+            </button>
+          </div>
         </div>
         <div className="flex gap-3">
           <div className="relative flex-1">

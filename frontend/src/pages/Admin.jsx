@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Users, BarChart2, MessageSquare, Activity, DollarSign, TrendingUp, Shield, ArrowLeft } from 'lucide-react';
+import { Users, BarChart2, MessageSquare, Activity, DollarSign, TrendingUp, Shield, ArrowLeft, ClipboardList } from 'lucide-react';
 import AdminUsers      from '../components/admin/AdminUsers';
 import AdminLeads      from '../components/admin/AdminLeads';
 import AdminCampaigns  from '../components/admin/AdminCampaigns';
@@ -8,6 +8,7 @@ import AdminSmsLogs    from '../components/admin/AdminSmsLogs';
 import AdminBilling    from '../components/admin/AdminBilling';
 import AdminAnalytics  from '../components/admin/AdminAnalytics';
 import AdminHealth     from '../components/admin/AdminHealth';
+import AdminAuditLog   from '../components/admin/AdminAuditLog';
 
 const SECTIONS = [
   { key: 'users',     label: 'Users',         icon: Users,          component: AdminUsers },
@@ -17,6 +18,7 @@ const SECTIONS = [
   { key: 'billing',   label: 'Billing',       icon: DollarSign,     component: AdminBilling },
   { key: 'analytics', label: 'Analytics',     icon: TrendingUp,     component: AdminAnalytics },
   { key: 'health',    label: 'System Health', icon: Shield,         component: AdminHealth },
+  { key: 'audit',     label: 'Audit Log',     icon: ClipboardList,  component: AdminAuditLog },
 ];
 
 export default function Admin() {

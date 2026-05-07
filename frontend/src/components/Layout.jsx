@@ -6,6 +6,7 @@ import {
   Plug, Settings, Archive, ShieldCheck,
 } from 'lucide-react';
 import { supabase, apiFetch } from '../lib/supabase';
+import { useNavigate, useLocation } from 'react-router-dom';
 
 function SoonBadge({ dim }) {
   return (
@@ -17,6 +18,9 @@ function SoonBadge({ dim }) {
 
 export default function Layout() {
   const [user, setUser] = useState(null);
+  const navigate = useNavigate();
+  const location = useLocation();
+  const impersonating = new URLSearchParams(location.search).get('impersonating');
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data: { user } }) => setUser(user));
@@ -160,8 +164,21 @@ export default function Layout() {
       </aside>
 
       {/* Main */}
-      <main className="flex-1 overflow-y-auto">
-        <Outlet />
+      <main className="flex-1 overflow-y-auto flex flex-col">
+        {impersonating && (
+          <div className="flex items-center justify-between px-6 py-2.5 bg-red-500 text-white text-xs font-semibold shrink-0 z-50">
+            <span>Viewing as <span className="font-mono">{impersonating}</span> — admin impersonation mode</span>
+            <button
+              onClick={async () => { await supabase.auth.signOut(); navigate('/admin'); }}
+              className="px-3 py-1 rounded-lg bg-white/20 hover:bg-white/30 transition-colors font-semibold"
+            >
+              Exit
+            </button>
+          </div>
+        )}
+        <div className="flex-1 overflow-y-auto">
+          <Outlet />
+        </div>
       </main>
     </div>
   );
