@@ -68,6 +68,18 @@ router.get('/users', async (req, res) => {
   res.json({ users, total: count || 0, page: Number(page), limit: Number(limit) });
 });
 
+router.get('/users/export', async (req, res) => {
+  const { plan, search } = req.query;
+  let q = supabaseAdmin.from('users')
+    .select('id, email, name, company_name, plan, created_at, twilio_number')
+    .order('created_at', { ascending: false }).limit(5000);
+  if (plan) q = q.eq('plan', plan);
+  if (search) q = q.or(`email.ilike.%${search}%,name.ilike.%${search}%`);
+  const { data, error } = await q;
+  if (error) return res.status(500).json({ error: error.message });
+  res.json(data || []);
+});
+
 router.get('/users/:id', async (req, res) => {
   const { data: user, error } = await supabaseAdmin
     .from('users')
@@ -99,17 +111,6 @@ router.get('/users/:id', async (req, res) => {
       message:  allLeads.some(l => l.last_contact_at),
     },
   });
-});
-
-router.patch('/users/:id', async (req, res) => {
-  const allowed = ['plan', 'is_admin'];
-  const updates = Object.fromEntries(Object.entries(req.body).filter(([k]) => allowed.includes(k)));
-  if (!Object.keys(updates).length) return res.status(400).json({ error: 'No valid fields' });
-
-  const { data, error } = await supabaseAdmin
-    .from('users').update(updates).eq('id', req.params.id).select().single();
-  if (error) return res.status(500).json({ error: error.message });
-  res.json(data);
 });
 
 // ── User actions ───────────────────────────────────────────────────
@@ -263,6 +264,19 @@ router.get('/leads', async (req, res) => {
   res.json({ leads: data || [], total: count || 0, page: Number(page), limit: Number(limit) });
 });
 
+router.get('/leads/export', async (req, res) => {
+  const { user_id, status, search } = req.query;
+  let q = supabaseAdmin.from('leads')
+    .select('id, name, phone, address, status, last_contact_at, imported_at, users(email)')
+    .or('archived.is.null,archived.eq.false').order('imported_at', { ascending: false }).limit(5000);
+  if (user_id) q = q.eq('user_id', user_id);
+  if (status)  q = q.eq('status', status);
+  if (search)  q = q.or(`name.ilike.%${search}%,phone.ilike.%${search}%`);
+  const { data, error } = await q;
+  if (error) return res.status(500).json({ error: error.message });
+  res.json(data || []);
+});
+
 router.get('/leads/:id', async (req, res) => {
   const { data: lead, error } = await supabaseAdmin
     .from('leads').select('*, users(name, email)').eq('id', req.params.id).single();
@@ -304,6 +318,18 @@ router.patch('/campaigns/:id', async (req, res) => {
 });
 
 // ── SMS Logs ───────────────────────────────────────────────────────
+
+router.get('/sms-logs/export', async (req, res) => {
+  const { direction, search } = req.query;
+  let q = supabaseAdmin.from('conversations')
+    .select('id, body, direction, ai_generated, sent_at, leads(name, phone, users(email))')
+    .order('sent_at', { ascending: false }).limit(5000);
+  if (direction) q = q.eq('direction', direction);
+  if (search)    q = q.ilike('body', `%${search}%`);
+  const { data, error } = await q;
+  if (error) return res.status(500).json({ error: error.message });
+  res.json(data || []);
+});
 
 router.get('/sms-logs', async (req, res) => {
   const { page = 1, limit = 50, direction, search } = req.query;
@@ -421,48 +447,6 @@ router.get('/health', async (req, res) => {
   res.json({ services, checked_at: now });
 });
 
-// ── Exports ────────────────────────────────────────────────────────
-
-router.get('/users/export', async (req, res) => {
-  const { plan, search } = req.query;
-  let q = supabaseAdmin.from('users')
-    .select('id, email, name, company_name, plan, created_at, twilio_number')
-    .order('created_at', { ascending: false })
-    .limit(5000);
-  if (plan) q = q.eq('plan', plan);
-  if (search) q = q.or(`email.ilike.%${search}%,name.ilike.%${search}%`);
-  const { data, error } = await q;
-  if (error) return res.status(500).json({ error: error.message });
-  res.json(data || []);
-});
-
-router.get('/leads/export', async (req, res) => {
-  const { user_id, status, search } = req.query;
-  let q = supabaseAdmin.from('leads')
-    .select('id, name, phone, address, status, last_contact_at, imported_at, users(email)')
-    .or('archived.is.null,archived.eq.false')
-    .order('imported_at', { ascending: false })
-    .limit(5000);
-  if (user_id) q = q.eq('user_id', user_id);
-  if (status)  q = q.eq('status', status);
-  if (search)  q = q.or(`name.ilike.%${search}%,phone.ilike.%${search}%`);
-  const { data, error } = await q;
-  if (error) return res.status(500).json({ error: error.message });
-  res.json(data || []);
-});
-
-router.get('/sms-logs/export', async (req, res) => {
-  const { direction, search } = req.query;
-  let q = supabaseAdmin.from('conversations')
-    .select('id, body, direction, ai_generated, sent_at, leads(name, phone, users(email))')
-    .order('sent_at', { ascending: false })
-    .limit(5000);
-  if (direction) q = q.eq('direction', direction);
-  if (search)    q = q.ilike('body', `%${search}%`);
-  const { data, error } = await q;
-  if (error) return res.status(500).json({ error: error.message });
-  res.json(data || []);
-});
 
 // ── Audit Log ──────────────────────────────────────────────────────
 

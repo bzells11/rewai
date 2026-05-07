@@ -42,7 +42,8 @@
       "Bash(railway *)",
       "Bash(vercel deploy *)",
       "Bash(vercel env *)",
-      "Bash(vercel ls *)"
+      "Bash(vercel ls *)",
+      "Bash(node -e \"const l = require\\('/Users/brandonzeller/Documents/CODING/REW AI/frontend/node_modules/lucide-react'\\); console.log\\('ClipboardList:', !!l.ClipboardList, 'StickyNote:', !!l.StickyNote, 'UserCheck:', !!l.UserCheck, 'Bot:', !!l.Bot\\)\")"
     ]
   }
 }
