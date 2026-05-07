@@ -14,7 +14,7 @@ import { SortableContext, verticalListSortingStrategy, arrayMove } from '@dnd-ki
 import { useNavigate } from 'react-router-dom';
 import { apiFetch } from '../lib/supabase';
 import LeadCard from '../components/LeadCard';
-import { Flame, TrendingUp, Users, Activity, Trash2, Rows2, Plus } from 'lucide-react';
+import { Flame, TrendingUp, Users, Activity, Trash2, Rows2, Plus, RefreshCw } from 'lucide-react';
 
 function collisionDetection(args) {
   const pointer = pointerWithin(args);
@@ -127,7 +127,7 @@ export default function Dashboard() {
     useSensor(PointerSensor, { activationConstraint: { distance: 6 } })
   );
 
-  const { data: leads = [], isLoading } = useQuery({
+  const { data: leads = [], isLoading, refetch, isFetching } = useQuery({
     queryKey: ['leads'],
     queryFn: () => apiFetch('/leads'),
     refetchInterval: 10_000,
@@ -283,6 +283,14 @@ export default function Dashboard() {
               Lead Pipeline
             </h1>
             <div className="flex items-center gap-2">
+              <button
+                onClick={() => refetch()}
+                disabled={isFetching}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-[#6b7280] hover:text-text-secondary hover:bg-dim/5 transition-all duration-150 disabled:opacity-40"
+              >
+                <RefreshCw size={13} className={isFetching ? 'animate-spin' : ''} />
+                Refresh
+              </button>
               <button
                 onClick={toggleCompact}
                 className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all duration-150
