@@ -110,7 +110,8 @@ export default function Dashboard() {
   const queryClient = useQueryClient();
   const [activeLead, setActiveLead] = useState(null);
   const [localLeads, setLocalLeads] = useState([]);
-  const [sortBy, setSortBy] = useState('default');
+  const [sortBy, setSortBy]     = useState('default');
+  const [filterBy, setFilterBy] = useState('all');
   const [compact, setCompact] = useState(
     () => localStorage.getItem('rewai-compact') === 'true'
   );
@@ -197,9 +198,17 @@ export default function Dashboard() {
   const byStatus = COLUMNS.reduce((acc, col) => {
     let colLeads = localLeads.filter(l => l.status === col.key);
 
+    // ── Filter ──
+    if (filterBy === 'ai-on')    colLeads = colLeads.filter(l => l.ai_enabled);
+    if (filterBy === 'ai-off')   colLeads = colLeads.filter(l => !l.ai_enabled);
+    if (filterBy === 'has-price') colLeads = colLeads.filter(l => l.asking_price);
+    if (filterBy === '7d')  colLeads = colLeads.filter(l => new Date(l.imported_at) > new Date(Date.now() - 7  * 86400000));
+    if (filterBy === '30d') colLeads = colLeads.filter(l => new Date(l.imported_at) > new Date(Date.now() - 30 * 86400000));
+    if (filterBy === '90d') colLeads = colLeads.filter(l => new Date(l.imported_at) > new Date(Date.now() - 90 * 86400000));
+
+    // ── Sort ──
     if (sortBy === 'contacted')   colLeads = colLeads.filter(l => !!l.last_contact_at);
     if (sortBy === 'uncontacted') colLeads = colLeads.filter(l => !l.last_contact_at);
-
     if (sortBy === 'name')    colLeads = [...colLeads].sort((a, b) => a.name.localeCompare(b.name));
     if (sortBy === 'date')    colLeads = [...colLeads].sort((a, b) => new Date(b.imported_at) - new Date(a.imported_at));
     if (sortBy === 'price')   colLeads = [...colLeads].sort((a, b) => (b.asking_price ?? 0) - (a.asking_price ?? 0));
@@ -333,28 +342,52 @@ export default function Dashboard() {
         </div>
 
         {/* Sort / Filter bar */}
-        <div className="px-8 py-3 border-b border-border flex items-center gap-2 flex-wrap">
-          <span className="text-xs text-muted mr-1">Sort by</span>
-          {[
-            { key: 'default',     label: 'Default' },
-            { key: 'name',        label: 'Name A→Z' },
-            { key: 'date',        label: 'Date Added' },
-            { key: 'price',       label: 'Asking Price' },
-            { key: 'contacted',   label: 'Contacted' },
-            { key: 'uncontacted', label: 'Not Contacted' },
-          ].map(({ key, label }) => (
+        <div className="px-8 py-2.5 border-b border-border flex items-center gap-2">
+          <select
+            value={sortBy}
+            onChange={e => setSortBy(e.target.value)}
+            className={`bg-dim/5 border rounded-lg px-3 py-1.5 text-xs font-medium focus:outline-none transition-all cursor-pointer
+              ${sortBy !== 'default' ? 'border-accent/40 text-accent bg-accent/5' : 'border-border text-[#6b7280]'}`}
+          >
+            <option value="default">Sort: Default</option>
+            <option value="name">Sort: Name A→Z</option>
+            <option value="date">Sort: Date Added</option>
+            <option value="price">Sort: Asking Price</option>
+            <option value="contacted">Sort: Contacted</option>
+            <option value="uncontacted">Sort: Not Contacted</option>
+          </select>
+
+          <select
+            value={filterBy}
+            onChange={e => setFilterBy(e.target.value)}
+            className={`bg-dim/5 border rounded-lg px-3 py-1.5 text-xs font-medium focus:outline-none transition-all cursor-pointer
+              ${filterBy !== 'all' ? 'border-accent/40 text-accent bg-accent/5' : 'border-border text-[#6b7280]'}`}
+          >
+            <option value="all">Filter: All Leads</option>
+            <optgroup label="Activity">
+              <option value="ai-on">AI Managing</option>
+              <option value="ai-off">Manual Mode</option>
+              <option value="has-price">Has Asking Price</option>
+            </optgroup>
+            <optgroup label="Date Added">
+              <option value="7d">Last 7 Days</option>
+              <option value="30d">Last 30 Days</option>
+              <option value="90d">Last 90 Days</option>
+            </optgroup>
+          </select>
+
+          {(sortBy !== 'default' || filterBy !== 'all') && (
             <button
-              key={key}
-              onClick={() => setSortBy(key)}
-              className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all duration-150
-                ${sortBy === key
-                  ? 'bg-accent/10 text-accent'
-                  : 'text-[#6b7280] hover:text-text-secondary hover:bg-dim/5'
-                }`}
+              onClick={() => { setSortBy('default'); setFilterBy('all'); }}
+              className="text-xs text-muted hover:text-text-primary transition-colors"
             >
-              {label}
+              Clear
             </button>
-          ))}
+          )}
+
+          <span className="ml-auto text-xs text-muted">
+            {Object.values(byStatus).reduce((s, a) => s + a.length, 0)} leads
+          </span>
         </div>
 
         {/* Kanban */}
