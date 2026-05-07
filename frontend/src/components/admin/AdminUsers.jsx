@@ -152,9 +152,6 @@ export default function AdminUsers() {
 
   const showToast = (message, type = 'success') => setToast({ message, type });
 
-  // Sync notes from detail
-  useEffect(() => { if (detail) setNotes(detail.admin_notes || ''); }, [detail?.id]);
-
   async function exportCSV() {
     const p = new URLSearchParams();
     if (search) p.set('search', search);
@@ -201,6 +198,9 @@ export default function AdminUsers() {
     queryFn: () => apiFetch(`/admin/users/${selected}`),
     enabled: !!selected,
   });
+
+  // Sync notes whenever a different user is opened
+  useEffect(() => { if (detail) setNotes(detail.admin_notes || ''); }, [detail?.id]);
 
   // Generic action mutation factory
   function useAction(path, method = 'POST', successMsg) {
