@@ -20,8 +20,8 @@ const allowedOrigins = [
 function isAllowedOrigin(origin) {
   if (!origin) return true;
   if (allowedOrigins.includes(origin)) return true;
-  // Allow all Vercel preview deployments for this project
-  if (/^https:\/\/frontend(-[a-z0-9]+)?-bzells11s-projects\.vercel\.app$/.test(origin)) return true;
+  // Allow all Vercel deployments and aliases for this project
+  if (/^https:\/\/frontend[a-z0-9-]*\.vercel\.app$/.test(origin)) return true;
   return false;
 }
 
