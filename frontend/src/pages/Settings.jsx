@@ -114,9 +114,9 @@ export default function Settings() {
               </div>
             )}
             {[
-              { key: 'name',         label: 'Your Name',    placeholder: 'Brandon Zeller' },
-              { key: 'company_name', label: 'Company Name', placeholder: 'Zeller Properties' },
-              { key: 'buying_area',  label: 'Buying Area',  placeholder: 'Columbus, OH' },
+              { key: 'name',         label: 'Your Name',    placeholder: 'Enter your name' },
+              { key: 'company_name', label: 'Company Name', placeholder: 'Enter company name' },
+              { key: 'buying_area',  label: 'Buying Area',  placeholder: 'Enter buying area (e.g. Dallas, TX)' },
             ].map(({ key, label, placeholder }) => (
               <div key={key}>
                 <label className="text-xs text-text-secondary block mb-1.5">{label}</label>
