@@ -32,7 +32,7 @@ router.get('/users', async (req, res) => {
 
   let q = supabaseAdmin
     .from('users')
-    .select('id, email, name, company_name, plan, created_at, is_admin, twilio_number, twilio_sid', { count: 'exact' })
+    .select('id, email, name, company_name, plan, created_at, is_admin, twilio_number, twilio_sid, admin_notes, admin_notes_updated_at', { count: 'exact' })
     .order('created_at', { ascending: false })
     .range(offset, offset + Number(limit) - 1);
 
@@ -83,7 +83,7 @@ router.get('/users/export', async (req, res) => {
 router.get('/users/:id', async (req, res) => {
   const { data: user, error } = await supabaseAdmin
     .from('users')
-    .select('id, email, name, company_name, buying_area, plan, twilio_number, twilio_sid, handoff_retention_days, created_at, is_admin')
+    .select('id, email, name, company_name, buying_area, plan, twilio_number, twilio_sid, handoff_retention_days, created_at, is_admin, admin_notes, admin_notes_updated_at')
     .eq('id', req.params.id)
     .single();
   if (error || !user) return res.status(404).json({ error: 'User not found' });
