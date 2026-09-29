@@ -3,6 +3,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { apiFetch, supabase } from '../lib/supabase';
 import ConversationThread from '../components/ConversationThread';
 import { Bot, User, Search } from 'lucide-react';
+import { DEMO_MODE } from '../lib/demo';
 
 const STATUS_COLORS = {
   cold:       'text-muted',
@@ -11,6 +12,8 @@ const STATUS_COLORS = {
   hot:        'text-red-400',
   handed_off: 'text-emerald-400',
   dead:       'text-muted',
+  not_interested: 'text-violet-400',
+  do_not_contact: 'text-muted',
 };
 
 const statusColors = {
@@ -21,11 +24,14 @@ const statusColors = {
   handed_off: '#22c55e',
   won:        '#22c55e',
   dead:       '#4b5563',
+  not_interested: '#8b5cf6',
+  do_not_contact: '#475569',
 };
 
 const STATUS_LABELS = {
   cold: 'Cold', active: 'Active', warm: 'Warm',
   hot: 'Hot', handed_off: 'Won', dead: 'Dead',
+  not_interested: 'Not Interested', do_not_contact: 'Do Not Contact',
 };
 
 const FILTERS = [
@@ -34,7 +40,9 @@ const FILTERS = [
   { key: 'warm',       label: 'Warm'   },
   { key: 'active',     label: 'Active' },
   { key: 'cold',       label: 'Cold'   },
-  { key: 'handed_off', label: 'Won'    },
+  ...(DEMO_MODE
+    ? [{ key: 'not_interested', label: 'No' }, { key: 'do_not_contact', label: 'DNC' }]
+    : [{ key: 'handed_off', label: 'Won' }]),
 ];
 
 const TEAL = '#0ea5e9';
@@ -59,19 +67,19 @@ export default function Conversations() {
   const { data: leads = [], isLoading } = useQuery({
     queryKey: ['leads'],
     queryFn: () => apiFetch('/leads'),
-    refetchInterval: 5_000,
+    refetchInterval: DEMO_MODE ? 2_000 : 5_000,
   });
 
   const { data: selectedLead } = useQuery({
     queryKey: ['lead', selectedId],
     queryFn: () => apiFetch(`/leads/${selectedId}`),
     enabled: !!selectedId,
-    refetchInterval: 3_000,
+    refetchInterval: DEMO_MODE ? 1_500 : 3_000,
   });
 
   // Real-time: new messages for the open conversation
   useEffect(() => {
-    if (!selectedId) return;
+    if (!selectedId || DEMO_MODE) return;
     const channel = supabase
       .channel(`conversations:${selectedId}`)
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'conversations', filter: `lead_id=eq.${selectedId}` },
@@ -83,6 +91,7 @@ export default function Conversations() {
 
   // Real-time: lead list sidebar updates
   useEffect(() => {
+    if (DEMO_MODE) return;
     const channel = supabase
       .channel('leads-live')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'leads' },
@@ -169,7 +178,7 @@ export default function Conversations() {
           </div>
 
           {/* Filter tabs */}
-          <div className="flex gap-4">
+          <div className="flex flex-wrap gap-x-4">
             {FILTERS.map(f => (
               <button
                 key={f.key}

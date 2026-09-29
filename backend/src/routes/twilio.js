@@ -47,7 +47,8 @@ router.post('/webhook', express.urlencoded({ extended: false }), async (req, res
     await cancelPendingFollowUps(lead.id);
 
     // Opt-out detection — stop all contact immediately
-    const optOutPattern = /\b(stop|unsubscribe|remove me|remove|opt.?out|cancel|quit|end)\b/i;
+    // Carrier keywords only count at the start of the message, so "end of the year" is not an opt-out.
+    const optOutPattern = /^\s*(stop|stopall|unsubscribe|cancel|quit|end)\b|\b(remove me|opt.?out|do not (text|contact|message)|don'?t (text|contact|message)|stop (texting|contacting|messaging)|take me off|not text me)\b/i;
     if (optOutPattern.test(messageBody)) {
       await supabaseAdmin.from('leads').update({
         status: 'dead',

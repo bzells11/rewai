@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { supabase } from './lib/supabase';
+import { DEMO_MODE } from './lib/demo';
 import { ThemeProvider } from './lib/ThemeContext';
 import Layout from './components/Layout';
 import Landing from './pages/Landing';
@@ -16,9 +17,10 @@ import Admin from './pages/Admin';
 import AdminGuard from './components/AdminGuard';
 
 export default function App() {
-  const [session, setSession] = useState(undefined); // undefined = loading
+  const [session, setSession] = useState(DEMO_MODE ? { demo: true } : undefined); // undefined = loading
 
   useEffect(() => {
+    if (DEMO_MODE) return;
     supabase.auth.getSession().then(({ data: { session } }) => setSession(session));
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_e, session) => setSession(session));
     return () => subscription.unsubscribe();
@@ -36,7 +38,7 @@ export default function App() {
     <ThemeProvider>
     <BrowserRouter>
       <Routes>
-        <Route path="/" element={<Landing />} />
+        <Route path="/" element={DEMO_MODE ? <Navigate to="/dashboard" replace /> : <Landing />} />
         <Route path="/login" element={!session ? <Login /> : <Navigate to="/dashboard" replace />} />
         <Route element={session ? <Layout /> : <Navigate to="/login" replace />}>
           <Route path="/dashboard" element={<Dashboard />} />

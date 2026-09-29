@@ -122,12 +122,16 @@ input, textarea, select {
 .status-hot        { background: #fef2f2;               color: #b91c1c; }
 .status-handed_off { background: rgba(16,185,129,0.12); color: #059669; }
 .status-dead       { background: rgba(100,116,139,0.07);color: #94a3b8; }
+.status-not_interested { background: #f5f3ff;           color: #6d28d9; }
+.status-do_not_contact { background: #f1f5f9;           color: #475569; }
 
 html.dark .status-cold       { background: rgba(100,116,139,0.20); color: #94a3b8; }
 html.dark .status-warm       { background: rgba(251,191,36,0.15);  color: #fbbf24; }
 html.dark .status-hot        { background: rgba(239,68,68,0.20);   color: #f87171; }
 html.dark .status-handed_off { background: rgba(74,222,128,0.15);  color: #4ade80; }
 html.dark .status-dead       { background: rgba(100,116,139,0.10); color: #475569; }
+html.dark .status-not_interested { background: rgba(139,92,246,0.18); color: #c4b5fd; }
+html.dark .status-do_not_contact { background: rgba(100,116,139,0.18); color: #94a3b8; }
 
 @layer utilities {
   .font-display { font-family: 'Space Grotesk', sans-serif; }

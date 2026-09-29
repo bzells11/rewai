@@ -6,6 +6,8 @@ import {
   Plug, Settings, Archive, ShieldCheck,
 } from 'lucide-react';
 import { supabase, apiFetch } from '../lib/supabase';
+import DemoBanner from './DemoBanner';
+import { DEMO_MODE } from '../lib/demo';
 import { useNavigate, useLocation } from 'react-router-dom';
 
 function SoonBadge({ dim }) {
@@ -23,6 +25,7 @@ export default function Layout() {
   const impersonating = new URLSearchParams(location.search).get('impersonating');
 
   useEffect(() => {
+    if (DEMO_MODE) return;
     supabase.auth.getUser().then(({ data: { user } }) => setUser(user));
   }, []);
 
@@ -87,10 +90,12 @@ export default function Layout() {
                 <MessageSquare size={16} />
                 <span className="flex-1">Conversations</span>
               </NavLink>
-              <NavLink to="/archive" className={linkClass}>
-                <Archive size={16} />
-                <span className="flex-1">Archive</span>
-              </NavLink>
+              {!DEMO_MODE && (
+                <NavLink to="/archive" className={linkClass}>
+                  <Archive size={16} />
+                  <span className="flex-1">Archive</span>
+                </NavLink>
+              )}
             </div>
           </div>
 
@@ -146,17 +151,19 @@ export default function Layout() {
 
         {/* Bottom pinned */}
         <div className="px-3 pt-3 pb-4 border-t border-border space-y-0.5">
-          <NavLink to="/settings" className={linkClass}>
-            <Settings size={16} />
-            Settings
-          </NavLink>
+          {!DEMO_MODE && (
+            <NavLink to="/settings" className={linkClass}>
+              <Settings size={16} />
+              Settings
+            </NavLink>
+          )}
           <div className="flex items-center gap-3 px-3 py-2.5">
             <div className="w-8 h-8 rounded-full bg-accent flex items-center justify-center shrink-0">
               <span className="text-bg font-bold text-sm leading-none">{userInitial}</span>
             </div>
             <div className="min-w-0">
               <p className="sidebar-username text-sm font-medium text-text-primary truncate leading-tight">{userName}</p>
-              <p className="text-[11px] text-muted">Starter plan</p>
+              <p className="text-[11px] text-muted">{DEMO_MODE ? 'Demo account' : 'Starter plan'}</p>
             </div>
           </div>
         </div>
@@ -165,6 +172,7 @@ export default function Layout() {
 
       {/* Main */}
       <div className="flex-1 flex flex-col overflow-hidden">
+        {DEMO_MODE && <DemoBanner />}
         {impersonating && (
           <div className="flex items-center justify-between px-6 py-2.5 bg-red-500 text-white text-xs font-semibold shrink-0">
             <span>Viewing as <span className="font-mono">{impersonating}</span> — admin impersonation mode</span>

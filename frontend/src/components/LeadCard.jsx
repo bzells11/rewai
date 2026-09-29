@@ -3,6 +3,7 @@ import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { Clock } from 'lucide-react';
 
+// Cards sit under a labeled column, so the longest statuses use short badges to save width.
 const STATUS_LABELS = {
   cold:       'Cold',
   active:     'Active',
@@ -10,6 +11,8 @@ const STATUS_LABELS = {
   hot:        'Hot',
   handed_off: 'Won',
   dead:       'Dead',
+  not_interested: 'No',
+  do_not_contact: 'DNC',
 };
 
 function timeAgo(dateStr) {
@@ -55,12 +58,12 @@ export default function LeadCard({ lead, isDragging, compact }) {
 
       {/* Address */}
       {!compact && lead.address && (
-        <p className="text-xs text-muted truncate mb-2 max-w-[190px] lead-card-address">{lead.address}</p>
+        <p className="text-xs text-muted truncate mb-2 lead-card-address">{lead.address}</p>
       )}
 
       {/* AI notes or situation */}
       {!compact && (lead.ai_notes || lead.situation) && (
-        <p className="text-xs text-text-secondary mb-3 line-clamp-2 leading-relaxed lead-card-situation">
+        <p className="text-xs text-text-secondary mb-3 line-clamp-3 leading-relaxed lead-card-situation">
           {lead.ai_notes || lead.situation}
         </p>
       )}

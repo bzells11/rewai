@@ -3,6 +3,9 @@ import { useSearchParams, useNavigate } from 'react-router-dom';
 import { Upload, CheckCircle, FileText, Loader, UserPlus, Users, CheckCircle2, AlertCircle, Plus, X } from 'lucide-react';
 import Papa from 'papaparse';
 import { apiFetch } from '../lib/supabase';
+import { DEMO_MODE } from '../lib/demo';
+
+const API = import.meta.env.VITE_API_URL || 'http://localhost:3001';
 
 const REQUIRED_FIELDS = ['name', 'phone'];
 
@@ -183,6 +186,15 @@ function CSVImport() {
   const [error, setError] = useState('');
   const fileRef = useRef();
 
+  async function loadSample() {
+    try {
+      const text = await fetch(`${API}/demo/sample-leads.csv`).then(r => r.text());
+      handleFile(text);
+    } catch {
+      setError('Could not load the sample CSV.');
+    }
+  }
+
   function handleFile(file) {
     if (!file) return;
     Papa.parse(file, {
@@ -288,6 +300,15 @@ function CSVImport() {
         <FileText size={12} />
         Must include first name, last name, and phone. Address, situation, asking price, and timeline are optional.
       </p>
+      {DEMO_MODE && (
+        <button
+          onClick={loadSample}
+          className="mt-4 px-4 py-2 rounded-xl text-sm font-medium border border-accent/30 text-accent hover:bg-accent/10 transition-all"
+        >
+          Use the sample CSV (25 fake owners)
+        </button>
+      )}
+      {error && <p className="text-sm text-red-400 mt-3">{error}</p>}
     </div>
   );
 

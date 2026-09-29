@@ -129,8 +129,9 @@ async function autoArchiveHandedOff() {
 }
 
 export function startScheduler() {
-  // Follow-up messages — every 15 minutes
+  // Follow-up messages — every 15 minutes (paused in DEMO_MODE so no fake sends hit real leads)
   cron.schedule('*/15 * * * *', async () => {
+    if (process.env.DEMO_MODE === 'true') return;
     console.log('[scheduler] checking for due follow-ups...');
     await processDueFollowUps();
   });

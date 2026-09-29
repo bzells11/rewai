@@ -8,9 +8,10 @@ import { ArrowLeft, Bot, User, Calendar, DollarSign, Clock, MapPin, Pencil, Chec
 const STATUS_LABELS = {
   cold: 'Cold', active: 'Active', warm: 'Warm',
   hot: 'Hot', handed_off: 'Won', dead: 'Dead',
+  not_interested: 'Not Interested', do_not_contact: 'Do Not Contact',
 };
 
-const STATUS_OPTIONS = ['cold', 'active', 'warm', 'hot', 'handed_off', 'dead'];
+const STATUS_OPTIONS = ['cold', 'active', 'warm', 'hot', 'handed_off', 'not_interested', 'do_not_contact', 'dead'];
 
 export default function LeadDetail() {
   const { id } = useParams();

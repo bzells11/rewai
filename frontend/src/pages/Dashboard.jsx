@@ -14,6 +14,8 @@ import { SortableContext, verticalListSortingStrategy, arrayMove } from '@dnd-ki
 import { useNavigate } from 'react-router-dom';
 import { apiFetch } from '../lib/supabase';
 import LeadCard from '../components/LeadCard';
+import DemoControls from '../components/DemoControls';
+import { DEMO_MODE } from '../lib/demo';
 import { Flame, TrendingUp, Users, Activity, Trash2, Rows2, Plus, RefreshCw } from 'lucide-react';
 
 function collisionDetection(args) {
@@ -22,20 +24,29 @@ function collisionDetection(args) {
   return closestCenter(args);
 }
 
-const COLUMNS = [
-  { key: 'cold',       label: 'Cold',       color: '#64748b' },
-  { key: 'active',     label: 'Active',     color: '#3b82f6' },
-  { key: 'warm',       label: 'Warm',       color: '#f59e0b' },
-  { key: 'hot',        label: 'Hot',        color: '#ef4444' },
-  { key: 'handed_off', label: 'Won',        color: '#10b981' },
+const ALL_COLUMNS = [
+  { key: 'cold',           label: 'Cold',           color: '#64748b' },
+  { key: 'active',         label: 'Active',         color: '#3b82f6' },
+  { key: 'warm',           label: 'Warm',           color: '#f59e0b' },
+  { key: 'hot',            label: 'Hot',            color: '#ef4444' },
+  { key: 'handed_off',     label: 'Won',            color: '#10b981' },
+  { key: 'not_interested', label: 'Not Interested', color: '#8b5cf6' },
+  { key: 'do_not_contact', label: 'Do Not Contact', color: '#475569' },
 ];
 
+// The demo shows every AI outcome. The production board keeps its original five columns.
+const COLUMNS = DEMO_MODE
+  ? ALL_COLUMNS.filter(c => c.key !== 'handed_off')
+  : ALL_COLUMNS.filter(c => !['not_interested', 'do_not_contact'].includes(c.key));
+
 const COLUMN_EMPTY_MSG = {
-  cold:       'Import leads to fill your pipeline',
-  active:     'Appears after the first AI outreach',
-  warm:       'Sellers who reply land here',
-  hot:        'Ready-to-close leads land here',
-  handed_off: 'Closed deals land here',
+  cold:           DEMO_MODE ? 'Load the sample leads to start' : 'Import leads to fill your pipeline',
+  active:         'Appears after the first AI outreach',
+  warm:           'Sellers who reply land here',
+  hot:            'Ready-to-close leads land here',
+  handed_off:     'Closed deals land here',
+  not_interested: 'Polite no. Follow up later.',
+  do_not_contact: 'Opted out. AI stops texting.',
 };
 
 function KanbanColumn({ col, leads, compact }) {
@@ -46,11 +57,12 @@ function KanbanColumn({ col, leads, compact }) {
   const bgOver   = col.color + '1f';
 
   return (
-    <div ref={setNodeRef} data-col={col.key} className="w-72 flex flex-col">
+    // Demo mode fits all outcome columns on screen instead of scrolling horizontally.
+    <div ref={setNodeRef} data-col={col.key} className={`${DEMO_MODE ? 'flex-1 min-w-0' : 'w-72'} flex flex-col`}>
       {/* Column header */}
       <div className="flex items-center gap-2 mb-3 px-0.5">
         <span className="w-2 h-2 rounded-full shrink-0" style={{ background: col.color }} />
-        <span className="font-display font-semibold text-sm tracking-tight kanban-col-label" style={{ color: col.color }}>
+        <span className="font-display font-semibold text-sm tracking-tight kanban-col-label truncate" style={{ color: col.color }}>
           {col.label}
         </span>
         <span className="ml-auto text-xs text-muted tabular-nums font-medium kanban-col-count">
@@ -131,7 +143,7 @@ export default function Dashboard() {
   const { data: leads = [], isLoading, refetch, isFetching } = useQuery({
     queryKey: ['leads'],
     queryFn: () => apiFetch('/leads'),
-    refetchInterval: 10_000,
+    refetchInterval: DEMO_MODE ? 2_000 : 10_000,
   });
 
   // Sync local order from server when not dragging
@@ -142,7 +154,7 @@ export default function Dashboard() {
   const { data: stats } = useQuery({
     queryKey: ['stats'],
     queryFn: () => apiFetch('/users/me/stats'),
-    refetchInterval: 30_000,
+    refetchInterval: DEMO_MODE ? 3_000 : 30_000,
   });
 
   const liveStats = {
@@ -321,6 +333,8 @@ export default function Dashboard() {
             </div>
           </div>
 
+          {DEMO_MODE && <DemoControls />}
+
           <div className="grid grid-cols-4 gap-3">
             {STATS.map(({ key, label, icon: Icon }) => {
               const raw = liveStats[key];
@@ -391,13 +405,13 @@ export default function Dashboard() {
         </div>
 
         {/* Kanban */}
-        <div className="flex-1 overflow-x-auto px-8 py-6">
+        <div className={`flex-1 py-6 ${DEMO_MODE ? 'px-6 overflow-x-hidden' : 'px-8 overflow-x-auto'}`}>
           {isLoading ? (
             <div className="flex items-center justify-center h-64">
               <div className="w-5 h-5 border-2 border-accent border-t-transparent rounded-full animate-spin" />
             </div>
           ) : (
-            <div className="flex gap-4 h-full min-w-max">
+            <div className={`flex h-full ${DEMO_MODE ? 'gap-3 w-full' : 'gap-4 min-w-max'}`}>
               {COLUMNS.map(col => (
                 <KanbanColumn key={col.key} col={col} leads={byStatus[col.key] ?? []} compact={compact} />
               ))}
