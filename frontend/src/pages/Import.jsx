@@ -242,7 +242,7 @@ function CSVImport() {
 
   function buildPreview() {
     if (!reqMap.first_name || !reqMap.phone) {
-      setError('Name and phone are required — select the columns below.');
+      setError('Name and phone are required. Select the columns below.');
       return;
     }
     const rows = rawRows.map(row => {
@@ -315,7 +315,7 @@ function CSVImport() {
   if (step === 'map') return (
     <div className="glass rounded-2xl p-6">
       <h2 className="font-display font-semibold text-text-primary mb-1">Confirm your columns</h2>
-      <p className="text-sm text-muted mb-6">{rawRows.length} rows found — we auto-detected your columns below.</p>
+      <p className="text-sm text-muted mb-6">{rawRows.length} rows found. We auto-detected your columns below.</p>
 
       {/* Required */}
       <div className="mb-7">
@@ -336,7 +336,7 @@ function CSVImport() {
                     onChange={e => setReqMap(m => ({ ...m, [key]: e.target.value }))}
                     className="flex-1 bg-dim/5 border border-amber-400/40 rounded-lg px-3 py-1.5 text-xs text-text-primary focus:outline-none focus:border-accent/50"
                   >
-                    <option value="">— select column —</option>
+                    <option value="">Select column...</option>
                     {headers.map(h => <option key={h} value={h}>{h}</option>)}
                   </select>
                 </div>
@@ -413,7 +413,7 @@ function CSVImport() {
                 <tr key={i} className="border-b border-border-subtle last:border-0">
                   <td className="px-4 py-2.5 text-text-primary">{row.name}</td>
                   <td className="px-4 py-2.5 text-text-secondary">{row.phone}</td>
-                  <td className="px-4 py-2.5 text-muted truncate max-w-[160px]">{row.address || '—'}</td>
+                  <td className="px-4 py-2.5 text-muted truncate max-w-[160px]">{row.address || '-'}</td>
                 </tr>
               ))}
             </tbody>
@@ -445,7 +445,7 @@ function CSVImport() {
       <h2 className="font-display font-bold text-xl text-text-primary mb-2">Import Complete</h2>
       <p className="text-text-secondary mb-1">{result?.imported} leads imported successfully.</p>
       {result?.imported === 0 && (
-        <p className="text-sm text-amber-400 mb-2">All leads in this file already exist — duplicate phone numbers are skipped.</p>
+        <p className="text-sm text-amber-400 mb-2">All leads in this file already exist. Duplicate phone numbers are skipped.</p>
       )}
       <p className="text-sm text-muted mb-8">AI follow-ups are scheduled and will start automatically.</p>
       <div className="flex gap-3 justify-center">

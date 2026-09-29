@@ -161,7 +161,7 @@ export default function LeadDetail() {
               }`}
           >
             {lead.ai_enabled ? <Bot size={15} /> : <User size={15} />}
-            {lead.ai_enabled ? 'AI Managing — Click to Take Over' : 'You Are Managing — Re-enable AI'}
+            {lead.ai_enabled ? 'AI Managing. Click to Take Over' : 'You Are Managing. Re-enable AI'}
           </button>
         </div>
 

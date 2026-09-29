@@ -258,7 +258,7 @@ export default function Conversations() {
               }
             >
               {aiEnabled ? <Bot size={14} /> : <User size={14} />}
-              {aiEnabled ? 'AI Managing — Take Over' : 'Manual Mode — Re-enable AI'}
+              {aiEnabled ? 'AI Managing. Take Over' : 'Manual Mode. Re-enable AI'}
             </button>
           </div>
         )}
