@@ -259,8 +259,9 @@ export function startReplies(s) {
     applyReply(s, item.leadId, item.r);
     s.replies.received++;
     if (queue.length === 0) {
-      // Give the last AI reply time to land before marking done.
-      s.replies.timer = setTimeout(() => { s.replies.done = true; }, 1200);
+      // Give the last AI reply time to land, plus one dashboard poll interval,
+      // so "Done." never appears before the board shows its final counts.
+      s.replies.timer = setTimeout(() => { s.replies.done = true; }, 3400);
     } else {
       s.replies.timer = setTimeout(step, REPLY_GAP_MS);
     }
