@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 // Plays once per browser tab session: the logo resolves in, then the whole
 // screen fades away to reveal the app already rendered underneath.
 const SEEN_KEY = 'rewai-demo-intro-seen';
-const HOLD_MS = 1900;  // logo + accent line finish animating
+const HOLD_MS = 2700;  // everything is in by 1.5s, then hold on the full logo
 const FADE_MS = 700;   // overlay fade out
 
 function alreadySeen() {
