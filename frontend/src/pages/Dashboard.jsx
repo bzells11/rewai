@@ -303,7 +303,7 @@ export default function Dashboard() {
             <h1 className="font-display font-bold text-xl text-text-primary tracking-tight">
               Lead Pipeline
             </h1>
-            <div className="flex items-center gap-2">
+            <div className="demo-fade flex items-center gap-2">
               <button
                 onClick={() => refetch()}
                 disabled={isFetching}
@@ -335,7 +335,7 @@ export default function Dashboard() {
 
           {DEMO_MODE && <DemoControls />}
 
-          <div className="grid grid-cols-4 gap-3">
+          <div className="demo-fade grid grid-cols-4 gap-3">
             {STATS.map(({ key, label, icon: Icon }) => {
               const raw = liveStats[key];
               const display = key === 'response' && raw ? `${raw}%` : raw;
@@ -356,7 +356,7 @@ export default function Dashboard() {
         </div>
 
         {/* Sort / Filter bar */}
-        <div className="px-8 py-2.5 border-b border-border flex items-center gap-2">
+        <div className="demo-fade px-8 py-2.5 border-b border-border flex items-center gap-2">
           <select
             value={sortBy}
             onChange={e => setSortBy(e.target.value)}

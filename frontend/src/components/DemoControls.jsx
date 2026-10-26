@@ -10,7 +10,8 @@ const STEPS = [
 ];
 
 // One guide entry per stage of the walkthrough. `focus` names the board
-// columns to highlight so people know where to look after each step.
+// columns to keep lit while everything else fades back. Empty means the
+// walkthrough is over and the whole app comes back.
 const GUIDE = {
   load: {
     eyebrow: 'Step 1 of 3',
@@ -43,7 +44,7 @@ const GUIDE = {
     eyebrow: 'Done',
     title: 'That is the whole loop',
     body: 'Hot leads are the ones to call first. Click any card to read the conversation and see why it was sorted there, or open Conversations to see every thread.',
-    focus: ['hot'],
+    focus: [],
   },
 };
 

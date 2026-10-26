@@ -55,7 +55,7 @@ export default function Layout() {
   return (
     <div className="flex h-screen overflow-hidden">
       {/* Sidebar */}
-      <aside className="w-60 flex-shrink-0 flex flex-col border-r border-border bg-surface">
+      <aside className="demo-fade w-60 flex-shrink-0 flex flex-col border-r border-border bg-surface">
 
         {/* Logo */}
         <div className="px-5 py-4 border-b border-border">
