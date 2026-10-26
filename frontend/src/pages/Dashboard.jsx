@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   DndContext,
@@ -65,7 +65,7 @@ function KanbanColumn({ col, leads, compact }) {
         <span className="font-display font-semibold text-sm tracking-tight kanban-col-label truncate" style={{ color: col.color }}>
           {col.label}
         </span>
-        <span className="ml-auto text-xs text-muted tabular-nums font-medium kanban-col-count">
+        <span key={leads.length} className="ml-auto text-xs text-muted tabular-nums font-medium kanban-col-count count-bump">
           {leads.length}
         </span>
       </div>
@@ -81,8 +81,8 @@ function KanbanColumn({ col, leads, compact }) {
           </div>
         )}
         <SortableContext items={leads.map(l => l.id)} strategy={verticalListSortingStrategy}>
-          {leads.map(lead => (
-            <LeadCard key={lead.id} lead={lead} compact={compact} />
+          {leads.map((lead, i) => (
+            <LeadCard key={lead.id} lead={lead} compact={compact} index={i} />
           ))}
         </SortableContext>
       </div>
@@ -108,6 +108,33 @@ function TrashZone({ visible }) {
       <span className={`text-sm font-medium ${isOver ? 'text-white' : 'text-red-400'}`}>Archive lead</span>
     </div>
   );
+}
+
+// Counts from the last shown value to the new one, and bumps when it goes up.
+function CountUp({ value, suffix = '' }) {
+  const [shown, setShown] = useState(value);
+  const [bump, setBump] = useState(0);
+  const from = useRef(value);
+
+  useEffect(() => {
+    const start = from.current;
+    from.current = value;
+    if (start === value) return;
+    if (value > start) setBump(b => b + 1);
+    if (window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) { setShown(value); return; }
+    const t0 = performance.now();
+    let raf;
+    const tick = now => {
+      const p = Math.min(1, (now - t0) / 650);
+      const eased = 1 - Math.pow(1 - p, 3);
+      setShown(Math.round(start + (value - start) * eased));
+      if (p < 1) raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, [value]);
+
+  return <span key={bump} className={bump ? 'inline-block stat-bump' : 'inline-block'}>{shown}{suffix}</span>;
 }
 
 const STATS = [
@@ -338,7 +365,7 @@ export default function Dashboard() {
           <div className="demo-fade grid grid-cols-4 gap-3">
             {STATS.map(({ key, label, icon: Icon }) => {
               const raw = liveStats[key];
-              const display = key === 'response' && raw ? `${raw}%` : raw;
+              const display = raw == null ? null : <CountUp value={raw} suffix={key === 'response' && raw ? '%' : ''} />;
               return (
                 <div key={key} className="rounded-xl px-5 py-4 glass">
                   <div className="stat-card-label flex items-center gap-1.5 text-muted text-xs mb-2">

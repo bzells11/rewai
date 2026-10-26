@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
@@ -15,6 +16,10 @@ const STATUS_LABELS = {
   do_not_contact: 'DNC',
 };
 
+// Last status each card was rendered with. A card remounts when it changes
+// columns, so on mount this tells a fresh card apart from one that just moved.
+const lastStatus = new Map();
+
 function timeAgo(dateStr) {
   if (!dateStr) return 'Never contacted';
   const diff = Date.now() - new Date(dateStr).getTime();
@@ -25,14 +30,23 @@ function timeAgo(dateStr) {
   return `${Math.floor(hrs / 24)}d ago`;
 }
 
-export default function LeadCard({ lead, isDragging, compact }) {
+export default function LeadCard({ lead, isDragging, compact, index = 0 }) {
   const navigate = useNavigate();
+  const [entrance] = useState(() => {
+    const prev = lastStatus.get(lead.id);
+    return prev && prev !== lead.status ? 'lead-card-moved' : 'lead-card-enter';
+  });
+  lastStatus.set(lead.id, lead.status);
 
   const { attributes, listeners, setNodeRef, transform, transition, isDragging: isCurrentlyDragging } = useSortable({
     id: lead.id,
   });
 
-  const style = { transform: CSS.Transform.toString(transform), transition };
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    '--enter-delay': `${Math.min(index, 10) * 45}ms`,
+  };
 
   return (
     <div
@@ -41,7 +55,7 @@ export default function LeadCard({ lead, isDragging, compact }) {
       {...listeners}
       {...attributes}
       onClick={() => !isCurrentlyDragging && navigate(`/leads/${lead.id}`)}
-      className={`glass rounded-xl p-3.5 cursor-pointer select-none touch-none
+      className={`glass rounded-xl p-3.5 cursor-pointer select-none touch-none ${isDragging ? '' : entrance} status-ring-${lead.status}
         ${isCurrentlyDragging ? 'opacity-30' : ''}
         ${isDragging ? 'shadow-2xl rotate-1 opacity-100' : ''}
       `}

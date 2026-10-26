@@ -360,6 +360,93 @@ html:not(.dark) .lead-card-price {
   filter: none;
 }
 
+/* ─── Motion: cards, counts, steps ─────────────────────── */
+/* `translate`/`scale` are separate from `transform`, so they never fight dnd-kit's drag transform. */
+.lead-card-enter {
+  animation: card-in 0.45s cubic-bezier(0.16, 1, 0.3, 1) var(--enter-delay, 0ms) backwards;
+}
+.lead-card-moved {
+  --ring: rgb(var(--accent-rgb));
+  animation:
+    card-in 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) var(--enter-delay, 0ms) backwards,
+    card-ring 1.4s ease-out var(--enter-delay, 0ms) backwards;
+}
+.lead-card-moved.status-ring-active         { --ring: #3b82f6; }
+.lead-card-moved.status-ring-warm           { --ring: #f59e0b; }
+.lead-card-moved.status-ring-hot            { --ring: #ef4444; }
+.lead-card-moved.status-ring-not_interested { --ring: #8b5cf6; }
+.lead-card-moved.status-ring-do_not_contact { --ring: #64748b; }
+.lead-card-moved.status-ring-handed_off     { --ring: #10b981; }
+@keyframes card-in {
+  from { opacity: 0; translate: 0 10px; scale: 0.96; }
+}
+@keyframes card-ring {
+  0%   { box-shadow: 0 0 0 2px var(--ring), 0 0 22px -2px var(--ring); }
+  100% { box-shadow: 0 0 0 2px transparent, 0 0 22px -2px transparent; }
+}
+
+.count-bump { animation: count-bump 0.35s ease-out; }
+@keyframes count-bump {
+  40% { scale: 1.35; color: rgb(var(--accent-rgb)); }
+}
+.stat-bump { animation: stat-bump 0.5s cubic-bezier(0.34, 1.56, 0.64, 1); }
+@keyframes stat-bump {
+  40% { scale: 1.12; color: rgb(var(--accent-rgb)); }
+}
+
+.demo-step-done { animation: step-done 0.45s cubic-bezier(0.34, 1.56, 0.64, 1); }
+.demo-step-check { animation: step-check 0.4s ease-out 0.15s backwards; }
+@keyframes step-done {
+  0%  { scale: 0.85; }
+  60% { scale: 1.08; }
+}
+@keyframes step-check {
+  from { opacity: 0; scale: 0; rotate: -45deg; }
+}
+
+.demo-guide-in { animation: guide-in 0.4s ease-out; }
+@keyframes guide-in {
+  from { opacity: 0; translate: 0 6px; }
+}
+
+.demo-live-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 9999px;
+  background: rgb(var(--accent-rgb));
+  animation: live-dot 1.2s ease-in-out infinite;
+}
+@keyframes live-dot {
+  50% { opacity: 0.3; scale: 0.7; }
+}
+
+.demo-confetti {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  pointer-events: none;
+  z-index: 20;
+}
+.demo-confetti span {
+  position: absolute;
+  width: 7px;
+  height: 11px;
+  border-radius: 2px;
+  opacity: 0;
+  animation: confetti 1.3s cubic-bezier(0.2, 0.7, 0.3, 1) forwards;
+}
+@keyframes confetti {
+  0%   { opacity: 1; translate: 0 0; rotate: 0deg; }
+  70%  { opacity: 1; }
+  100% { opacity: 0; translate: var(--dx) calc(var(--dy) + 60px); rotate: var(--rot); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lead-card-enter, .lead-card-moved, .count-bump, .stat-bump, .demo-step-done,
+  .demo-step-check, .demo-guide-in, .demo-live-dot { animation: none; }
+  .demo-confetti { display: none; }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .demo-next-step, .demo-next-arrow { animation: none; }
   .demo-next-step { box-shadow: 0 0 0 3px rgb(var(--accent-rgb) / 0.35); }

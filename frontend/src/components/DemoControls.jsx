@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Upload, Send, MessagesSquare, Check, Loader, ArrowRight } from 'lucide-react';
 import { apiFetch } from '../lib/supabase';
@@ -48,6 +48,33 @@ const GUIDE = {
   },
 };
 
+const CONFETTI_COLORS = ['#0ea5e9', '#f59e0b', '#ef4444', '#10b981', '#8b5cf6'];
+
+// A short burst from the step panel when the last step finishes.
+function Confetti() {
+  const [pieces] = useState(() => Array.from({ length: 28 }, (_, i) => {
+    const angle = (Math.PI * 2 * i) / 28 + Math.random() * 0.4;
+    const dist = 90 + Math.random() * 110;
+    return {
+      dx: `${Math.cos(angle) * dist}px`,
+      dy: `${Math.sin(angle) * dist * 0.6 - 40}px`,
+      rot: `${Math.random() * 540 - 270}deg`,
+      color: CONFETTI_COLORS[i % CONFETTI_COLORS.length],
+      delay: `${Math.random() * 120}ms`,
+    };
+  }));
+  return (
+    <div className="demo-confetti" aria-hidden="true">
+      {pieces.map((p, i) => (
+        <span
+          key={i}
+          style={{ '--dx': p.dx, '--dy': p.dy, '--rot': p.rot, background: p.color, animationDelay: p.delay }}
+        />
+      ))}
+    </div>
+  );
+}
+
 export default function DemoControls() {
   const queryClient = useQueryClient();
   const [busy, setBusy] = useState(null);
@@ -87,6 +114,20 @@ export default function DemoControls() {
   const guide = GUIDE[replying ? 'replying' : allDone ? 'done' : nextStep || 'replying'];
   const focus = state ? guide.focus.join(' ') : '';
 
+  // Celebrate only when the run finishes while we watch, not when coming back to a finished demo.
+  const [celebrate, setCelebrate] = useState(false);
+  const wasDone = useRef(null);
+  useEffect(() => {
+    if (!state) return;
+    if (wasDone.current === false && allDone) {
+      setCelebrate(true);
+      const t = setTimeout(() => setCelebrate(false), 1600);
+      wasDone.current = allDone;
+      return () => clearTimeout(t);
+    }
+    wasDone.current = allDone;
+  }, [state, allDone]);
+
   // The board highlights these columns via CSS, so it needs no demo state of its own.
   useEffect(() => {
     if (focus) document.documentElement.dataset.demoFocus = focus;
@@ -94,7 +135,8 @@ export default function DemoControls() {
   }, [focus]);
 
   return (
-    <div className="mb-5 rounded-xl border border-accent/25 bg-accent/5 px-4 py-3.5">
+    <div className="relative mb-5 rounded-xl border border-accent/25 bg-accent/5 px-4 py-3.5">
+      {celebrate && <Confetti />}
       <div className="flex flex-wrap items-center gap-2.5">
         <span className="text-xs font-semibold text-accent shrink-0">Try it:</span>
 
@@ -109,9 +151,9 @@ export default function DemoControls() {
             return (
               <span
                 key={step.key}
-                className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium bg-emerald-500/15 text-emerald-600"
+                className="demo-step-done flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium bg-emerald-500/15 text-emerald-600"
               >
-                <Check size={12} />
+                <Check size={12} className="demo-step-check" />
                 {step.label}
               </span>
             );
@@ -152,8 +194,9 @@ export default function DemoControls() {
         <span className="ml-auto text-xs text-muted">Nothing is really sent. Every step is simulated.</span>
       </div>
 
-      <div className="mt-3.5 pt-3.5 border-t border-accent/15">
-        <p className="text-[11px] font-semibold uppercase tracking-wider text-accent">
+      <div key={guide.title} className="demo-guide-in mt-3.5 pt-3.5 border-t border-accent/15">
+        <p className="flex items-center text-[11px] font-semibold uppercase tracking-wider text-accent">
+          {replying && <span className="demo-live-dot mr-2" />}
           {guide.eyebrow}
           {replying && <span className="ml-2 normal-case tracking-normal text-muted font-medium">{state.replies.received} of {state.replies.total} replies read</span>}
         </p>
@@ -162,6 +205,14 @@ export default function DemoControls() {
           {guide.body}
           {guide.watch && <span className="text-text-primary"> {guide.watch}</span>}
         </p>
+        {replying && (
+          <div className="mt-3 h-1 max-w-sm rounded-full bg-accent/15 overflow-hidden">
+            <div
+              className="h-full rounded-full bg-accent transition-[width] duration-700 ease-out"
+              style={{ width: `${state.replies.total ? (state.replies.received / state.replies.total) * 100 : 0}%` }}
+            />
+          </div>
+        )}
       </div>
       {error && <p className="text-xs text-red-500 mt-2">{error}</p>}
     </div>
