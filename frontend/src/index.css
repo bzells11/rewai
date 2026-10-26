@@ -338,6 +338,18 @@ html:not(.dark) .lead-card-price {
   0%, 100% { transform: translateX(0); }
   50%      { transform: translateX(3px); }
 }
+/* Demo: highlight the board columns the current step is talking about */
+[data-demo-focus~="cold"] [data-col="cold"],
+[data-demo-focus~="active"] [data-col="active"],
+[data-demo-focus~="warm"] [data-col="warm"],
+[data-demo-focus~="hot"] [data-col="hot"],
+[data-demo-focus~="not_interested"] [data-col="not_interested"],
+[data-demo-focus~="do_not_contact"] [data-col="do_not_contact"] {
+  border-radius: 14px;
+  box-shadow: 0 0 0 1px rgb(var(--accent-rgb) / 0.45), 0 0 24px rgb(var(--accent-rgb) / 0.12);
+  transition: box-shadow 0.4s ease;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .demo-next-step, .demo-next-arrow { animation: none; }
   .demo-next-step { box-shadow: 0 0 0 3px rgb(var(--accent-rgb) / 0.35); }
