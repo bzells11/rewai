@@ -15,6 +15,7 @@ import Settings from './pages/Settings';
 import Archive from './pages/Archive';
 import Admin from './pages/Admin';
 import AdminGuard from './components/AdminGuard';
+import DemoIntro from './components/DemoIntro';
 
 export default function App() {
   const [session, setSession] = useState(DEMO_MODE ? { demo: true } : undefined); // undefined = loading
@@ -36,6 +37,7 @@ export default function App() {
 
   return (
     <ThemeProvider>
+    {DEMO_MODE && <DemoIntro />}
     <BrowserRouter>
       <Routes>
         <Route path="/" element={DEMO_MODE ? <Navigate to="/dashboard" replace /> : <Landing />} />

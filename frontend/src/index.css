@@ -109,6 +109,71 @@ html.dark .logo-white {
   filter: brightness(0) invert(1);     /* black → white on dark sidebar */
 }
 
+/* ─── Demo intro — logo resolves in, overlay fades to app ─ */
+.demo-intro {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #080a0c;
+  cursor: pointer;
+  transition: opacity var(--intro-fade) ease, visibility var(--intro-fade);
+}
+.demo-intro-leave {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+.demo-intro-leave > div {
+  transform: scale(1.04);
+  transition: transform var(--intro-fade) ease;
+}
+.demo-intro-glow {
+  position: absolute;
+  width: 420px;
+  height: 420px;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: radial-gradient(circle, rgba(14,165,233,0.14) 0%, transparent 65%);
+  pointer-events: none;
+  opacity: 0;
+  animation: intro-glow 1.6s ease-out 0.2s forwards;
+}
+.demo-intro-logo {
+  position: relative;
+  filter: brightness(0) invert(1) blur(12px);
+  opacity: 0;
+  transform: scale(0.94);
+  animation: intro-logo 1s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+.demo-intro-line {
+  width: 40px;
+  height: 2px;
+  background: #0ea5e9;
+  transform: scaleX(0);
+  animation: intro-line 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.7s forwards;
+}
+.demo-intro-tag {
+  opacity: 0;
+  animation: intro-tag 0.5s ease 1s forwards;
+}
+@keyframes intro-logo {
+  to { opacity: 1; transform: scale(1); filter: brightness(0) invert(1) blur(0); }
+}
+@keyframes intro-line {
+  to { transform: scaleX(1); }
+}
+@keyframes intro-glow {
+  to { opacity: 1; }
+}
+@keyframes intro-tag {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
 /* ─── Inputs ──────────────────────────────────────────── */
 input, textarea, select {
   background-color: var(--input-bg);
