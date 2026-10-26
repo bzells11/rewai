@@ -1,16 +1,11 @@
 import { useEffect, useState } from 'react';
 
-// Plays once per browser tab session: the logo resolves in, then the whole
-// screen fades away to reveal the app already rendered underneath.
-// On phones and tablets the intro plays every load and then stays up with a
+// Plays on every page load, since a refresh also restarts the demo: the logo
+// resolves in, then the whole screen fades away to reveal the app already
+// rendered underneath. On phones and tablets it then stays up with a
 // "use a computer" message, since the demo is built for desktop.
-const SEEN_KEY = 'rewai-demo-intro-seen';
 const HOLD_MS = 2700;  // everything is in by 1.5s, then hold on the full logo
 const FADE_MS = 700;   // overlay fade out
-
-function alreadySeen() {
-  try { return sessionStorage.getItem(SEEN_KEY) === '1'; } catch { return false; }
-}
 
 function isMobileDevice() {
   const ua = navigator.userAgent || '';
@@ -20,18 +15,13 @@ function isMobileDevice() {
   return window.matchMedia?.('(pointer: coarse)').matches && window.innerWidth < 1024;
 }
 
-function markSeen() {
-  try { sessionStorage.setItem(SEEN_KEY, '1'); } catch { /* storage blocked, intro just replays */ }
-}
-
 export default function DemoIntro() {
   const [mobile] = useState(isMobileDevice);
-  const [phase, setPhase] = useState(() => (!mobile && alreadySeen() ? 'done' : 'waiting'));
+  const [phase, setPhase] = useState('waiting');
   const [copied, setCopied] = useState(false);
 
   useEffect(() => {
     if (phase !== 'waiting') return;
-    markSeen();
     const reduced = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
     // Start once the logo is decoded so it never pops in half-loaded.
     const img = new Image();
