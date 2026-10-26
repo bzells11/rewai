@@ -121,6 +121,19 @@ html.dark .logo-white {
   cursor: pointer;
   transition: opacity var(--intro-fade) ease, visibility var(--intro-fade);
 }
+.demo-intro-mobile {
+  cursor: default;
+  touch-action: none;
+}
+.demo-intro-blocked {
+  position: relative;
+  opacity: 0;
+  transform: translateY(6px);
+  animation: intro-blocked 0.5s ease forwards;
+}
+@keyframes intro-blocked {
+  to { opacity: 1; transform: translateY(0); }
+}
 .demo-intro-leave {
   opacity: 0;
   visibility: hidden;
