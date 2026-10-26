@@ -21,7 +21,8 @@ The whole run takes under a minute. Conversations shows the full text threads.
 ## How it is wired
 
 - Each visitor gets a sandbox held in the backend's memory, keyed by a random id
-  the browser stores in `localStorage` and sends as `X-Demo-Session`.
+  the browser keeps in memory and sends as `X-Demo-Session`. A refresh makes a
+  new id, so the demo starts over on every page load.
 - Sandboxes never touch Supabase. They expire after 60 minutes of inactivity.
 - `/demo/*` mirrors the shapes of `/leads` and `/users/me`, so the normal pages
   run unchanged against it.

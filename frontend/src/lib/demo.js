@@ -1,7 +1,9 @@
 // Demo mode: set VITE_DEMO_MODE=true at build time for the public demo deployment.
 export const DEMO_MODE = import.meta.env.VITE_DEMO_MODE === 'true';
 
-const KEY = 'rewai-demo-session';
+// The session id lives only in memory, so every page load gets a fresh sandbox
+// and the demo starts over. Abandoned sandboxes expire on the server.
+let sessionId = null;
 
 function newId() {
   if (typeof crypto !== 'undefined' && crypto.randomUUID) return crypto.randomUUID();
@@ -9,13 +11,11 @@ function newId() {
 }
 
 export function getDemoSessionId() {
-  let id = localStorage.getItem(KEY);
-  if (!id) { id = newId(); localStorage.setItem(KEY, id); }
-  return id;
+  if (!sessionId) sessionId = newId();
+  return sessionId;
 }
 
 export function rotateDemoSessionId() {
-  const id = newId();
-  localStorage.setItem(KEY, id);
-  return id;
+  sessionId = newId();
+  return sessionId;
 }
